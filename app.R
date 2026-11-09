@@ -18,7 +18,7 @@ ui <- navbarPage(
   
   theme = bs_theme(
     version = 5,
-    bootswatch = "morph"
+    bootswatch = "morph",
   ),
   
   tags$head(
@@ -68,14 +68,14 @@ ui <- navbarPage(
                 width = 6,
                 
                 selectInput("val_alpha","Significance level (α)",
-                            choices = c("0.01" = 0.01, "0.05" = 0.05, "0.10" = 0.10),
-                            selected = "0.05"
+                  choices = c("0.01" = 0.01, "0.05" = 0.05, "0.10" = 0.10), selected = "0.05"
                 ),
                 
                 selectInput("val_m_studies","N studies to simulate",
-                            choices = c(10, 50, 100, 500),
-                            selected = 100
+                  choices = c(10, 50, 100, 500), selected = 100
                 ),
+                
+                tableOutput("meta_summary")
                 
               )
             ),
@@ -109,15 +109,23 @@ ui <- navbarPage(
           
           wellPanel(
             style = "height: 250px;",
-            h4("Simulation result (Key indicators)"),
-            textOutput("stand_eff_size"),
-            textOutput("pow_calc_pow"),
-            textOutput("effective_power"),
-            textOutput("true_effect_display"),
-            textOutput("meta_mean_from_detected"),
-            textOutput("estimated_bias"),
-            textOutput("estimated_rel_bias")
-            
+
+            div(
+              style = "display: flex; justify-content: center;",
+              tableOutput("true_effect_df")
+            ),
+            fluidRow(
+              column( 
+                width = 6,
+                h6("From 'significant' studies"),
+                tableOutput("meta_from_signif")
+              ),
+              column(
+                width = 6,
+                h6("From all studies"),
+                tableOutput("meta_from_nonsig")
+              )
+            )
           )
         ),
         
@@ -130,9 +138,9 @@ ui <- navbarPage(
             h4("How Underpowered Research Undermines Science"),
             
             p("Background"),
-            p("Methods"),
-            p("Usage / quick guide"),
-            p("..."),
+            p("Quick guide"),
+            p("Solution"),
+            p("Methods")
             
             
             
@@ -326,24 +334,31 @@ server <- function(input, output, session) {
   # Prepare summary stats from sum results 
   meta_results <- reactive({
     
-    mean_from_det <- df_plot() %>%
-      filter(true_pos == TRUE) %>%
-      pull(estimate) %>%
-      mean()
-    
-    estimated_bias <- mean_from_det - input$val_true_effect
-    
-    estimated_rel_bias <- 100*(estimated_bias / input$val_true_effect)
-    
-    
     effective_power <- sum(df_plot()$true_pos) / nrow(df_plot())
+    
+    # stats from significant studies subset
+    mean_from_sign <- df_plot() %>% filter(true_pos == TRUE) %>% pull(estimate) %>% mean()
+    estimated_abs_bias_sign <- mean_from_sign - input$val_true_effect
+    estimated_rel_bias_sign <- (estimated_abs_bias_sign / input$val_true_effect)
+    
+    # stats from all studies 
+    mean_from_all <- df_plot() %>% pull(estimate) %>% mean()
+    estimated_abs_bias_ns <- mean_from_all - input$val_true_effect
+    estimated_rel_bias_ns <- (estimated_abs_bias_ns / input$val_true_effect)
+    
     # return as list 
     list(
       effective_power = effective_power,
       true_effect = input$val_true_effect,
-      mean_from_detected = mean_from_det,
-      estimated_bias = estimated_bias,
-      estimated_rel_bias = estimated_rel_bias
+      # 
+      mean_from_sign = mean_from_sign,
+      estimated_abs_bias_sign = estimated_abs_bias_sign,
+      estimated_rel_bias_sign = estimated_rel_bias_sign,
+      #
+      mean_from_all = mean_from_all,
+      estimated_abs_bias_ns = estimated_abs_bias_ns,
+      estimated_rel_bias_ns = estimated_rel_bias_ns
+      
     )
   })
   
@@ -351,38 +366,56 @@ server <- function(input, output, session) {
   
   
   #---------------------
-  # map summary stats to output tags 
+  # map summary stats to output mini-tables 
   
-  output$stand_eff_size <- renderText({
-    paste("Standardized effect size:", round( meta_calcul()$stand_eff_size,2))
-  })
+  output$meta_summary <- renderTable({
+    data.frame(
+      Metric = c("Std. effect size", "Calculated power", "Estimated power"),
+      Value = round(c(
+        meta_calcul()$stand_eff_size,
+        meta_calcul()$pow_calc_pow,
+        meta_results()$effective_power
+      ), 2)
+    )
+  }, colnames = FALSE, bordered = FALSE, striped = FALSE)
   
-  output$pow_calc_pow <- renderText({
-    paste("Calculated power:", round( meta_calcul()$pow_calc_pow,2))
-  })
-  
-  output$effective_power <- renderText({
-    paste("Effective power:", round( meta_results()$effective_power,2))
-  })
   
   output$true_effect_display <- renderText({
     paste("True effect size:", meta_results()$true_effect)
   })
   
-  output$meta_mean_from_detected <- renderText({
-    paste("Mean effect size from 'significant' studies:", round(meta_results()$mean_from_detected, 2))
-  })
+  output$true_effect_df <- renderTable({
+    data.frame(
+      Metric = c("True effect size"),
+      Value = round(c(meta_results()$true_effect), 2)
+    )
+  }, colnames = FALSE, bordered = FALSE, striped = FALSE)
   
-  output$estimated_bias <- renderText({
-    paste("Estimated absolute bias:", round(meta_results()$estimated_bias, 2))
-  })  
+
+  output$meta_from_signif <- renderTable({
+    data.frame(
+      Metric = c("Mean effect size", "Absolute bias", "Relative bias"),
+      Value = round(c(
+        meta_results()$mean_from_sign,
+        meta_results()$estimated_abs_bias_sign,
+        meta_results()$estimated_rel_bias_sign
+      ), 2)
+    )
+  }, colnames = FALSE, bordered = FALSE, striped = FALSE)
   
-  output$estimated_rel_bias <- renderText({
-    # paste("Estimated relative bias (%):", round(meta_results()$estimated_rel_bias, 0))
-    paste("Estimated relative bias (%):", sprintf("%.0f %%", meta_results()$estimated_rel_bias))
-    
-    
-  })  
+  
+  output$meta_from_nonsig <- renderTable({
+    data.frame(
+      Metric = c("Mean effect size", "Absolute bias", "Relative bias"),
+      Value = round(c(
+        meta_results()$mean_from_all,
+        meta_results()$estimated_abs_bias_ns,
+        meta_results()$estimated_rel_bias_ns
+      ), 2)
+    )
+  }, colnames = FALSE, bordered = FALSE, striped = FALSE)
+  
+
   
   
   
