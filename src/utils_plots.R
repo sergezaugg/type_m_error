@@ -4,7 +4,7 @@
 # ---------------------------
 
 
-render_example_dataset_plot <- function(df){
+render_example_dataset_plot <- function(df) {
   ggplot(df) +
     geom_jitter(
       aes(x = group, y = response, color = group),
@@ -19,16 +19,15 @@ render_example_dataset_plot <- function(df){
         fill = NA,
         linewidth = 0.8
       )
-    )  
+    )
 }
 
-# render_sim_result_plot(df = df_plot())
 
-render_sim_result_plot <- function(df, input){
+render_sim_result_plot <- function(df, input) {
   ggplot(df) +
     geom_point(aes(x = estimate, y = p_value, color = true_pos)) +
     # facet_wrap(~ term, ncol = 1, scales = "free") +
-    scale_y_continuous(limits = c(0, 1)) + 
+    scale_y_continuous(limits = c(0, 1)) +
     geom_hline(
       yintercept = as.numeric(input$val_alpha),
       linetype = "dotted",
@@ -53,7 +52,7 @@ render_sim_result_plot <- function(df, input){
     ) +
     annotate(
       "text",
-      x = input$val_true_effect ,
+      x = input$val_true_effect,
       y = Inf,
       label = paste0("True effect = ", input$val_true_effect),
       angle = 90,
@@ -72,6 +71,3 @@ render_sim_result_plot <- function(df, input){
       )
     )
 }
-
-
-
