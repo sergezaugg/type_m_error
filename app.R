@@ -9,14 +9,21 @@ library(bslib)
 
 source("src/utils_sim.R")
 source("src/utils_plots.R")
+# Tell shiny where to find resources
+addResourcePath("resources", "resources")
 
 # style_pannels <- "background-color: #220022; padding: 15px; border-radius: 5px; height: 700px;"
-
 # bs_theme
 # zephyr  +++++ morph, +++   quartz, ++    # litera, ++    # lumen, +  # cosmo, +
 
 ui <- navbarPage(
-  title = "Underpowered Research Undermines Science",
+  
+  # title = "Underpowered Research Undermines Science",
+  title = tags$span(
+    style = "display: inline-flex; align-items: center; gap: 10px;",
+    tags$img(src = "resources/z_logo_violet.png", height = "30px"),
+    tags$span("Underpowered Research Undermines Science")
+  ),
   
   theme = bs_theme(
     version = 5,
