@@ -15,7 +15,7 @@ source("src/utils_plots.R")
 # morph, +++   quartz, ++    # litera, ++    # lumen, +  # cosmo, +
 
 ui <- navbarPage(
-  title = "How Underpowered Research Undermines Science",
+  title = "Underpowered Research Undermines Science",
   theme = bs_theme(
     version = 5,
     bootswatch = "litera",
@@ -122,7 +122,7 @@ ui <- navbarPage(
         width = 4,
         wellPanel(
           style = "height: 750px;",
-          h5("How Underpowered Research Undermines Science"),
+          h5("Underpowered Research Undermines Science"),
           p("Background"),
           p("Quick guide"),
           p("Solution"),
