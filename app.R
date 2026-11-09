@@ -8,6 +8,7 @@ library(tidyverse)
 library(bslib)
 
 source("src/utils_sim.R")
+source("src/utils_plots.R")
 
 
 # bs_theme
@@ -18,7 +19,7 @@ ui <- navbarPage(
   
   theme = bs_theme(
     version = 5,
-    bootswatch = "morph",
+    bootswatch = "litera",
   ),
   
   tags$head(
@@ -41,7 +42,7 @@ ui <- navbarPage(
           
           wellPanel(
             style = "height: 400px;",
-            h4("Simulation parameters"),
+            h5("Simulation parameters"),
             
             fluidRow(
               
@@ -83,7 +84,7 @@ ui <- navbarPage(
           
           wellPanel(
             style = "height: 350px;",
-            h4("Explore a few simulated datasets"),
+            h5("Explore simulated datasets"),
             fluidRow(
               column( 
                 width = 5,
@@ -102,10 +103,22 @@ ui <- navbarPage(
           
           wellPanel(
             style = "height: 500px;",
-            h4("Simulation result (Plot)"),
+            
+            fluidRow(
+              column(width = 6,
+                h5("Simulation result")
+              ),
+              column(width = 6,
+                actionButton("btn_rerun_sim", "Re-run simulation")
+              )
+            ),
+            
+            div(style = "height: 15px;"),
             
             plotOutput("resu_plot", height = "400px")
           ),
+          
+          
           
           wellPanel(
             style = "height: 250px;",
@@ -135,7 +148,7 @@ ui <- navbarPage(
           
           wellPanel(
             style = "height: 750px;",
-            h4("How Underpowered Research Undermines Science"),
+            h5("How Underpowered Research Undermines Science"),
             
             p("Background"),
             p("Quick guide"),
@@ -230,46 +243,45 @@ server <- function(input, output, session) {
   
   #--------------------------
   # Simulate one realized data set when rerun button clicked
-  sim_results <- eventReactive(input$btn_rerun, {
-    combine_dfs_lin(par_a(), par_b())
-  })
+  df_sim_results <- eventReactive(
+    eventExpr = input$btn_rerun, 
+    ignoreNULL = FALSE, # to run once before button click
+    valueExpr = {combine_dfs_lin(par_a(), par_b())}
+    )
   
   sim_plot <- reactive({
-    # req(sim_results()) # prevents the plot from being rendered before the first click
-    ggplot(sim_results()) +
-      geom_jitter(
-        aes(x = group, y = response, color = group),
-        width = 0.15,
-        height = 0
-      ) +
-      theme_classic() +
-      theme(
-        plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
-        panel.border = element_rect(
-          color = "black",
-          fill = NA,
-          linewidth = 0.8
-        )
-      )
+    render_example_dataset_plot(df = df_sim_results())
   })
   
 
   #-------------------------------
   # perform the full simulation (Simulate multiple times)
-  df_esti_all <- reactive(map_dfr(1:(as.numeric(input$val_m_studies)), function(i) {
-    
-    df_all <- combine_dfs_lin(par_a(), par_b())
-    mod01 <- lm(response ~ group, data = df_all)
-    
-    tibble(
-      iter = i,
-      term = names(coef(mod01)),
-      estimate = coef(mod01),
-      conf_lo = confint(mod01)[, 1],
-      conf_up = confint(mod01)[, 2],
-      p_value = summary(mod01)$coefficients[, 4]
+  df_esti_all <- reactive({
+    map_dfr(1:as.numeric(input$val_m_studies), function(i) {
+      df_all <- combine_dfs_lin(par_a(), par_b())
+      mod01 <- lm(response ~ group, data = df_all)
+      
+      tibble(
+        iter = i,
+        term = names(coef(mod01)),
+        estimate = coef(mod01),
+        conf_lo = confint(mod01)[, 1],
+        conf_up = confint(mod01)[, 2],
+        p_value = summary(mod01)$coefficients[, 4]
+      )
+    })
+  }) |>  # do the simulation when any of below items is changed   
+    bindEvent(
+      input$btn_rerun_sim,
+      input$val_m_studies,
+      input$val_n_per_group,
+      input$val_true_effect,
+      input$val_true_sd,
+      ignoreNULL = FALSE
     )
-  }))
+  
+  
+  
   
   # Filter and derive from simulation results
   df_plot <- reactive(
@@ -282,52 +294,7 @@ server <- function(input, output, session) {
   
   # Prepare main plot: p-value vs estimate
   resu_plot <- reactive({
-    ggplot(df_plot()) +
-      geom_point(aes(x = estimate, y = p_value, color = true_pos)) +
-      # facet_wrap(~ term, ncol = 1, scales = "free") +
-      scale_y_continuous(limits = c(0, 1)) + 
-      geom_hline(
-        yintercept = as.numeric(input$val_alpha),
-        linetype = "dotted",
-        color = "#992200",
-        linewidth = 1.0
-      ) +
-      annotate(
-        "text",
-        x = Inf,
-        y = as.numeric(input$val_alpha),
-        label = paste0("α = ", input$val_alpha),
-        hjust = 1.1,
-        vjust = -0.5,
-        # color = "orange",
-        size = 5
-      ) +
-      geom_vline(
-        xintercept = input$val_true_effect,
-        linetype = "dotted",
-        color = "#009933",
-        linewidth = 1.0
-      ) +
-      annotate(
-        "text",
-        x = input$val_true_effect ,
-        y = Inf,
-        label = paste0("True effect = ", input$val_true_effect),
-        angle = 90,
-        hjust = 1.2,
-        vjust = 1.5,
-        # color = "green",
-        size = 5
-      ) +
-      theme_classic() +
-      theme(
-        plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
-        panel.border = element_rect(
-          color = "black",
-          fill = NA,
-          linewidth = 0.8
-        )
-      )
+    render_sim_result_plot(df = df_plot(), input = input)
   })
   
 
