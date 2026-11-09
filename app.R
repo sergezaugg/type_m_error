@@ -13,12 +13,11 @@ ui <- fluidPage(
   
   fluidRow(
     
-    # Column 1: 3 stacked panels
     column(
       width = 4,
 
       wellPanel(
-        h4("Panel 1.1 - Simulation parameters"),
+        h4("Simulation parameters"),
         
         fluidRow(
           
@@ -55,45 +54,42 @@ ui <- fluidPage(
             )
           )
         ),
-        # verbatimTextOutput("calc_results")
       ),
       
       wellPanel(
-        # h4("Panel 1.3 - Simulation results"),
+        # h4("aaaaa"),
         actionButton("btn_rerun", "Simulate a data set"),
         plotOutput("sim_plot")
       )
     ),
     
-    # Column 2: 2 stacked panels
     column(
       width = 4,
       
       wellPanel(
-        h4("Panel 2.1"),
+        h4("Simulation result (Plot)"),
         plotOutput("resu_plot")
       ),
       
       wellPanel(
-        h4("Panel 2.2"),
-        
+        h4("Simulation result (Key indicators)"),
         textOutput("stand_eff_size"),
         textOutput("pow_calc_pow"),
-
         textOutput("effective_power"),
         textOutput("true_effect_display"),
         textOutput("meta_mean_from_detected"),
-        textOutput("estimated_bias")
-        
+        textOutput("estimated_bias"),
+        textOutput("estimated_rel_bias")
+  
       )
     ),
     
-    # Column 3: 1 panel
+    
     column(
       width = 4,
       
       wellPanel(
-        h4("Panel 3.1")
+        h4("Methods ...")
       )
     )
     
@@ -242,13 +238,17 @@ server <- function(input, output, session) {
     
     estimated_bias <- mean_from_det - input$val_true_effect
     
+    estimated_rel_bias <- 100*(estimated_bias / input$val_true_effect)
+    
+    
     effective_power <- sum(df_plot()$true_pos) / nrow(df_plot())
     # return as list 
     list(
       effective_power = effective_power,
       true_effect = input$val_true_effect,
       mean_from_detected = mean_from_det,
-      estimated_bias = estimated_bias
+      estimated_bias = estimated_bias,
+      estimated_rel_bias = estimated_rel_bias
     )
   })
   
@@ -281,6 +281,12 @@ server <- function(input, output, session) {
   output$estimated_bias <- renderText({
     paste("Estimated absolute bias:", round(meta_results()$estimated_bias, 2))
   })  
+  
+  output$estimated_rel_bias <- renderText({
+    paste("Estimated relative bias (%):", round(meta_results()$estimated_rel_bias, 2))
+  })  
+  
+  
   
   #---------------------
   # map plots to output tags 
