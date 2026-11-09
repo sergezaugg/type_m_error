@@ -10,16 +10,39 @@ library(bslib)
 source("src/utils_sim.R")
 source("src/utils_plots.R")
 
+# style_pannels <- "background-color: #220022; padding: 15px; border-radius: 5px; height: 700px;"
 
 # bs_theme
-# morph, +++   quartz, ++    # litera, ++    # lumen, +  # cosmo, +
+# zephyr  +++++ morph, +++   quartz, ++    # litera, ++    # lumen, +  # cosmo, +
 
 ui <- navbarPage(
   title = "Underpowered Research Undermines Science",
+  
   theme = bs_theme(
     version = 5,
-    bootswatch = "litera",
+    bootswatch = "zephyr", # "litera",
+    # bg = "#dddddd", 
+    # fg = "#000000", 
+    primary = "#aabbcc", 
+    secondary = "#aabbcc"
   ),
+  
+  
+
+  
+  
+  
+ 
+  
+  # version and (c) at bottom
+  tags$div(
+    "v0.5.0 - © 2026 Serge Zaugg",
+    style = "position: fixed;bottom: 8px; left: 20px;
+      font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
+    "
+  ),
+  
+  
   tags$head(
     tags$style(HTML("
     .well {
@@ -27,12 +50,17 @@ ui <- navbarPage(
     }
   "))
   ),
+  
+
+  
+  
 
 
   # first tab
   tabPanel(
     "Full Sim",
     fluidRow(
+      
       column(
         width = 4,
         wellPanel(
