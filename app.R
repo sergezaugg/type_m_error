@@ -24,16 +24,9 @@ ui <- navbarPage(
     # bg = "#dddddd", 
     # fg = "#000000", 
     primary = "#aabbcc", 
-    secondary = "#aabbcc"
+    secondary = "#ccddee"
   ),
-  
-  
 
-  
-  
-  
- 
-  
   # version and (c) at bottom
   tags$div(
     "v0.5.0 - © 2026 Serge Zaugg",
@@ -41,7 +34,6 @@ ui <- navbarPage(
       font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
     "
   ),
-  
   
   tags$head(
     tags$style(HTML("
@@ -96,14 +88,21 @@ ui <- navbarPage(
         ),
         wellPanel(
           style = "height: 350px;",
-          h5("Explore simulated datasets"),
           fluidRow(
-            column(
-              width = 5,
-              actionButton("btn_rerun", "Next data set")
+            column(width = 5,
+              h5("Explore simulated datasets"),
+              p("Inspect datasets simulated with selected parameters.
+                Each dataset is different due to random SD.
+                In full simulation, multiples datasets are generated, each gives a point on 
+                simulation result plot.
+                ")       
             ),
-            column(
-              width = 7,
+            column(width = 7,
+              div(
+               style = "text-align: right;",
+               actionButton("btn_rerun", "Next data set")
+              ),
+              div(style = "height: 15px;"),
               plotOutput("sim_plot", height = "250px")
             )
           )
@@ -120,7 +119,10 @@ ui <- navbarPage(
             ),
             column(
               width = 6,
-              actionButton("btn_rerun_sim", "Re-run simulation")
+              div(
+                style = "text-align: right;",
+                actionButton("btn_rerun_sim", "Re-run simulation")
+              )
             )
           ),
           div(style = "height: 15px;"),
