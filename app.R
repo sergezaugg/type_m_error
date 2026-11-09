@@ -1,5 +1,13 @@
+# ---------------------------
+# Description : main app's entry point
+# Author : Serge Zaugg
+# ---------------------------
 
 library(shiny)
+library(tidyverse)
+
+source("src/utils_sim.R")
+
 
 ui <- fluidPage(
   
@@ -42,12 +50,12 @@ ui <- fluidPage(
             ),
             
             sliderInput(
-              "val_m_studies", "Number of studies",
+              "val_m_studies", "N studies to simulate",
               min = 50, max = 200, value = 100, step = 10
             )
           )
         ),
-        verbatimTextOutput("calc_results")
+        # verbatimTextOutput("calc_results")
       ),
       
       wellPanel(
@@ -68,9 +76,15 @@ ui <- fluidPage(
       
       wellPanel(
         h4("Panel 2.2"),
+        
+        textOutput("stand_eff_size"),
+        textOutput("pow_calc_pow"),
+
         textOutput("effective_power"),
         textOutput("true_effect_display"),
-        textOutput("meta_mean_from_detected")
+        textOutput("meta_mean_from_detected"),
+        textOutput("estimated_bias")
+        
       )
     ),
     
@@ -88,69 +102,27 @@ ui <- fluidPage(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 server <- function(input, output, session) {
   
   #--------------------------
-  output$calc_results <- renderPrint({
-    # Standardized effect size
-    stand_eff_size <- input$val_true_effect / input$val_true_sd
-    # Power calculation
-    pow_calc <- power.t.test(
-      delta = input$val_true_effect,
-      sd = input$val_true_sd,
-      sig.level = input$val_alpha,
-      n = input$val_n_per_group,
-      type = "two.sample",
-      alternative = "two.sided"
-    )
-    pow_calc_pow <- pow_calc$power
-    # Display results
-    cat("Standardized effect size:", round(stand_eff_size, 3), "\n")
-    cat("Statistical power:", round(pow_calc_pow, 3), "\n")
-  })
-  
-  
-
-  #--------------------------
-    # Simulate only when rerun button is clicked
-    sim_results <- eventReactive(input$btn_rerun, {
-      
-      par_a <- list(
-        x = 0,
-        n = input$val_n_per_group,
-        b0 = 0,
-        sd_res0 = input$val_true_sd
-      )
-      
-      par_b <- list(
-        x = 1,
-        n = input$val_n_per_group,
-        b0 = input$val_true_effect,
-        sd_res0 = input$val_true_sd
-      )
-      
-      combine_dfs_lin(par_a, par_b)
-      
-    })
-  
-  # Plot simulation results
-  output$sim_plot <- renderPlot({
-    
-    req(sim_results())
-    
-    ggplot(sim_results()) +
-      geom_jitter(
-        aes(x = group, y = response, color = group),
-        width = 0.15,
-        height = 0
-      )
-    
-  })
-  
-  #--------------------------
-  
-  
-  #-------------------------------
+  # wrap user input into reactive lists 
   par_a <- reactive(list(
     x = 0,
     n = input$val_n_per_group,
@@ -165,7 +137,57 @@ server <- function(input, output, session) {
     sd_res0 = input$val_true_sd
   ))
   
-  # Simulate multiple times
+  
+  #--------------------------
+  # summary stats computed directly from inputs 
+  meta_calcul <- reactive({
+    # Standardized effect size
+    stand_eff_size <- input$val_true_effect / input$val_true_sd
+    # Power calculation
+    pow_calc <- power.t.test(
+      delta = input$val_true_effect,
+      sd = input$val_true_sd,
+      sig.level = input$val_alpha,
+      n = input$val_n_per_group,
+      type = "two.sample",
+      alternative = "two.sided"
+    )
+    pow_calc_pow <- pow_calc$power
+    # return as list 
+    list(
+      stand_eff_size = stand_eff_size,
+      pow_calc_pow = pow_calc_pow
+    )
+  })
+  
+  
+  
+  
+  
+  
+
+
+  
+  
+  #--------------------------
+  # Simulate one realized data set when rerun button clicked
+  sim_results <- eventReactive(input$btn_rerun, {
+    combine_dfs_lin(par_a(), par_b())
+  })
+  
+  sim_plot <- reactive({
+    # req(sim_results()) # prevents the plot from being rendered before the first click
+    ggplot(sim_results()) +
+      geom_jitter(
+        aes(x = group, y = response, color = group),
+        width = 0.15,
+        height = 0
+      )
+  })
+  
+
+  #-------------------------------
+  # perform the full simulation (Simulate multiple times)
   df_esti_all <- reactive(map_dfr(1:input$val_m_studies, function(i) {
     
     df_all <- combine_dfs_lin(par_a(), par_b())
@@ -190,29 +212,8 @@ server <- function(input, output, session) {
       )
   )
   
-  output$effective_power <- renderText({
-    aa <- sum(df_plot()$true_pos) / nrow(df_plot())
-    paste("Effective power:", round(aa,2))
-  })
-  
-  # true effect
-  output$true_effect_display <- renderText({
-    paste("True effect:", input$val_true_effect)
-  })
-  
-  # meta_mean_from_detected
-  output$meta_mean_from_detected <- renderText({
-    mean_from_det <- df_plot() %>% filter(true_pos == TRUE) %>% pull(estimate) %>% mean()
-    paste("Effect from significant:", round(mean_from_det,2))
-  })
-  
- 
-  
-  
-  
-  # Plot p-value vs estimate
-  output$resu_plot <- renderPlot({
-    
+  # Prepare main plot: p-value vs estimate
+  resu_plot <- reactive({
     ggplot(df_plot()) +
       geom_point(aes(x = estimate, y = p_value, color = true_pos)) +
       facet_wrap(~ term, ncol = 1, scales = "free") +
@@ -228,8 +229,65 @@ server <- function(input, output, session) {
         color = "green",
         linewidth = 1.5
       )
-    
   })
+  
+
+  # Prepare summary stats from sum results 
+  meta_results <- reactive({
+    
+    mean_from_det <- df_plot() %>%
+      filter(true_pos == TRUE) %>%
+      pull(estimate) %>%
+      mean()
+    
+    estimated_bias <- mean_from_det - input$val_true_effect
+    
+    effective_power <- sum(df_plot()$true_pos) / nrow(df_plot())
+    # return as list 
+    list(
+      effective_power = effective_power,
+      true_effect = input$val_true_effect,
+      mean_from_detected = mean_from_det,
+      estimated_bias = estimated_bias
+    )
+  })
+  
+  
+  
+  
+  #---------------------
+  # map summary stats to output tags 
+  
+  output$stand_eff_size <- renderText({
+    paste("Standardized effect size:", round( meta_calcul()$stand_eff_size,2))
+  })
+  
+  output$pow_calc_pow <- renderText({
+    paste("Calculated power:", round( meta_calcul()$pow_calc_pow,2))
+  })
+  
+  output$effective_power <- renderText({
+    paste("Effective power:", round( meta_results()$effective_power,2))
+  })
+  
+  output$true_effect_display <- renderText({
+    paste("True effect size:", meta_results()$true_effect)
+  })
+  
+  output$meta_mean_from_detected <- renderText({
+    paste("Mean effect size from 'significant' studies:", round(meta_results()$mean_from_detected, 2))
+  })
+  
+  output$estimated_bias <- renderText({
+    paste("Estimated absolute bias:", round(meta_results()$estimated_bias, 2))
+  })  
+  
+  #---------------------
+  # map plots to output tags 
+  
+  output$sim_plot  <- renderPlot({sim_plot()})
+  
+  output$resu_plot <- renderPlot({resu_plot()})
   
   
   
