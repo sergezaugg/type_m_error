@@ -5,95 +5,150 @@
 
 library(shiny)
 library(tidyverse)
+library(bslib)
 
 source("src/utils_sim.R")
 
 
-ui <- fluidPage(
-  
-  fluidRow(
-    
-    column(
-      width = 4,
+# bs_theme
+# morph, +++   quartz, ++    # litera, ++    # lumen, +  # cosmo, +
 
-      wellPanel(
-        h4("Simulation parameters"),
+ui <- navbarPage(
+  title = "How Underpowered Research Undermines Science",
+  
+  theme = bs_theme(
+    version = 5,
+    bootswatch = "morph"
+  ),
+  
+  tags$head(
+    tags$style(HTML("
+    .well {
+      margin-bottom: 15px;
+    }
+  "))
+  ),
+  
+  
+  
+  # first tab 
+  tabPanel(
+      "Full Sim",
+      fluidRow(
         
-        fluidRow(
+        column(
+          width = 4,
           
-          column(
-            width = 6,
+          wellPanel(
+            style = "height: 400px;",
+            h4("Simulation parameters"),
             
-            sliderInput(
-              "val_n_per_group", "Sample size per group",
-              min = 5, max = 200, value = 30, step = 1
+            fluidRow(
+              
+              column(
+                width = 6,
+                
+                sliderInput(
+                  "val_n_per_group", "Sample size per group",
+                  min = 5, max = 200, value = 30, step = 1
+                ),
+                
+                sliderInput(
+                  "val_true_effect", "True effect",
+                  min = 0, max = 1, value = 0.5, step = 0.05
+                ),
+                
+                sliderInput(
+                  "val_true_sd", "True SD",
+                  min = 0.1, max = 3, value = 1.0, step = 0.1
+                )
+              ),
+              
+              column(
+                width = 6,
+                
+                selectInput("val_alpha","Significance level (α)",
+                            choices = c("0.01" = 0.01, "0.05" = 0.05, "0.10" = 0.10),
+                            selected = "0.05"
+                ),
+                
+                selectInput("val_m_studies","N studies to simulate",
+                            choices = c(10, 50, 100, 500),
+                            selected = 100
+                ),
+                
+              )
             ),
-         
-            sliderInput(
-              "val_true_effect", "True effect",
-              min = 0, max = 2, value = 0.5, step = 0.05
-            ),
-            
-            sliderInput(
-              "val_true_sd", "True SD",
-              min = 0.1, max = 3, value = 1.0, step = 0.1
-            )
           ),
           
-          column(
-            width = 6,
-            
-            sliderInput(
-              "val_alpha", "Significance level (α)",
-              min = 0.01, max = 0.10, value = 0.05, step = 0.01
-            ),
-            
-            sliderInput(
-              "val_m_studies", "N studies to simulate",
-              min = 50, max = 200, value = 100, step = 10
+          wellPanel(
+            style = "height: 350px;",
+            h4("Explore a few simulated datasets"),
+            fluidRow(
+              column( 
+                width = 5,
+                actionButton("btn_rerun", "Next data set")
+              ),
+              column(
+                width = 7,
+                plotOutput("sim_plot", height = "250px")
+              )
             )
           )
         ),
-      ),
-      
-      wellPanel(
-        # h4("aaaaa"),
-        actionButton("btn_rerun", "Simulate a data set"),
-        plotOutput("sim_plot")
+        
+        column(
+          width = 4,
+          
+          wellPanel(
+            style = "height: 500px;",
+            h4("Simulation result (Plot)"),
+            
+            plotOutput("resu_plot", height = "400px")
+          ),
+          
+          wellPanel(
+            style = "height: 250px;",
+            h4("Simulation result (Key indicators)"),
+            textOutput("stand_eff_size"),
+            textOutput("pow_calc_pow"),
+            textOutput("effective_power"),
+            textOutput("true_effect_display"),
+            textOutput("meta_mean_from_detected"),
+            textOutput("estimated_bias"),
+            textOutput("estimated_rel_bias")
+            
+          )
+        ),
+        
+        
+        column(
+          width = 4,
+          
+          wellPanel(
+            style = "height: 750px;",
+            h4("How Underpowered Research Undermines Science"),
+            
+            p("Background"),
+            p("Methods"),
+            p("Usage / quick guide"),
+            p("..."),
+            
+            
+            
+            
+          )
+        )
       )
     ),
     
-    column(
-      width = 4,
-      
-      wellPanel(
-        h4("Simulation result (Plot)"),
-        plotOutput("resu_plot")
-      ),
-      
-      wellPanel(
-        h4("Simulation result (Key indicators)"),
-        textOutput("stand_eff_size"),
-        textOutput("pow_calc_pow"),
-        textOutput("effective_power"),
-        textOutput("true_effect_display"),
-        textOutput("meta_mean_from_detected"),
-        textOutput("estimated_bias"),
-        textOutput("estimated_rel_bias")
   
-      )
-    ),
-    
-    
-    column(
-      width = 4,
-      
-      wellPanel(
-        h4("Methods ...")
-      )
-    )
-    
+  # second tab    
+  tabPanel(
+    "About",
+    fluidRow()
   )
+  
 )
 
 
@@ -143,7 +198,7 @@ server <- function(input, output, session) {
     pow_calc <- power.t.test(
       delta = input$val_true_effect,
       sd = input$val_true_sd,
-      sig.level = input$val_alpha,
+      sig.level = as.numeric(input$val_alpha),
       n = input$val_n_per_group,
       type = "two.sample",
       alternative = "two.sided"
@@ -178,13 +233,22 @@ server <- function(input, output, session) {
         aes(x = group, y = response, color = group),
         width = 0.15,
         height = 0
+      ) +
+      theme_classic() +
+      theme(
+        plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
+        panel.border = element_rect(
+          color = "black",
+          fill = NA,
+          linewidth = 0.8
+        )
       )
   })
   
 
   #-------------------------------
   # perform the full simulation (Simulate multiple times)
-  df_esti_all <- reactive(map_dfr(1:input$val_m_studies, function(i) {
+  df_esti_all <- reactive(map_dfr(1:(as.numeric(input$val_m_studies)), function(i) {
     
     df_all <- combine_dfs_lin(par_a(), par_b())
     mod01 <- lm(response ~ group, data = df_all)
@@ -204,7 +268,7 @@ server <- function(input, output, session) {
     df_esti_all() %>%
       filter(term == "groupB") %>%
       mutate(
-        true_pos = p_value <= input$val_alpha & estimate > 0
+        true_pos = p_value <= as.numeric(input$val_alpha) & estimate > 0
       )
   )
   
@@ -212,18 +276,49 @@ server <- function(input, output, session) {
   resu_plot <- reactive({
     ggplot(df_plot()) +
       geom_point(aes(x = estimate, y = p_value, color = true_pos)) +
-      facet_wrap(~ term, ncol = 1, scales = "free") +
+      # facet_wrap(~ term, ncol = 1, scales = "free") +
+      scale_y_continuous(limits = c(0, 1)) + 
       geom_hline(
-        yintercept = input$val_alpha,
-        linetype = "dashed",
-        color = "orange",
-        linewidth = 1.5
+        yintercept = as.numeric(input$val_alpha),
+        linetype = "dotted",
+        color = "#992200",
+        linewidth = 1.0
+      ) +
+      annotate(
+        "text",
+        x = Inf,
+        y = as.numeric(input$val_alpha),
+        label = paste0("α = ", input$val_alpha),
+        hjust = 1.1,
+        vjust = -0.5,
+        # color = "orange",
+        size = 5
       ) +
       geom_vline(
         xintercept = input$val_true_effect,
         linetype = "dotted",
-        color = "green",
-        linewidth = 1.5
+        color = "#009933",
+        linewidth = 1.0
+      ) +
+      annotate(
+        "text",
+        x = input$val_true_effect ,
+        y = Inf,
+        label = paste0("True effect = ", input$val_true_effect),
+        angle = 90,
+        hjust = 1.2,
+        vjust = 1.5,
+        # color = "green",
+        size = 5
+      ) +
+      theme_classic() +
+      theme(
+        plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
+        panel.border = element_rect(
+          color = "black",
+          fill = NA,
+          linewidth = 0.8
+        )
       )
   })
   
@@ -283,7 +378,10 @@ server <- function(input, output, session) {
   })  
   
   output$estimated_rel_bias <- renderText({
-    paste("Estimated relative bias (%):", round(meta_results()$estimated_rel_bias, 2))
+    # paste("Estimated relative bias (%):", round(meta_results()$estimated_rel_bias, 0))
+    paste("Estimated relative bias (%):", sprintf("%.0f %%", meta_results()$estimated_rel_bias))
+    
+    
   })  
   
   
