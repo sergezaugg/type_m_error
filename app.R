@@ -10,6 +10,8 @@ library(bslib)
 source("src/utils_sim.R")
 source("src/utils_plots.R")
 source("src/styles.R")
+source("pages/text_for_pages.R")
+
 
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
@@ -40,10 +42,6 @@ ui <- tagList(
       font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
     "
     ),
-
-    
-    
-  
 
     #-------------------------
     # (2) pages
@@ -118,10 +116,7 @@ ui <- tagList(
               column(
                 width = 5,
                 h5("Explore datasets"),
-                p("Inspect a few simulated datasets.
-                Each dataset is different due to simlated random error (SD).
-                In full simulation, multiples datasets are generated.
-                ")
+                p(ptext$info_expl_datasets_tx)
               ),
               column(
                 width = 7,
@@ -227,36 +222,15 @@ ui <- tagList(
           width = 4,
           wellPanel(
             style = "height: 760px;",
-            h5("Underpowered Research Undermines Science"),
-            h6("Background"),
-            p("
-            Research is constrained by competition between researchers
-            and the need for fast publication.
-            Consequently, researchers are incentivized to conduct studies with smaller sample sizes.
-            The claimed power (typically 80%) is often
-            based on unrealistic assumptions and the effective power is much lower.
-            Combined with the selective publication of 'significant' results,
-            this increases the Type M error (Magnitude error), i.e. published results overestimate
-            the true effect.
-            "),
-            h6("This app"),
-            p("With this app, you can simulate the above phenomena using simple but formal
-            statistics and assess the severity of the problem."),
-            h6("Quick guide"),
-            p("
-            Use the sliders & radio buttons to define the study and sample size.
-            In the results pane, see how estimated effect sizes and p-values are related
-            and how selective publication biases the evidence.
-            The bottom pane shows evidence under selective publication compared
-            to 'all-studies-published'.
-            "),
-            h6("Hint from author"),
-            p("Based on my real-world experience as a statistician, I suspect that
-            many studies that claim 80% power probaly have much less.
-            So with this app, try parameter values that give effective power ~50%.
-            "),
-            h6("Conclusion"),
-            p("Well that is up to you ...")
+            h5(ptext$info_mainti_ti),
+            h6(ptext$info_background_ti),
+            p(ptext$info_background_tx),
+            h6(ptext$info_thisapp_ti),
+            p(ptext$info_thisapp_tx),
+            h6(ptext$info_guide_ti),
+            p(ptext$info_guide_tx),
+            h6(ptext$info_hint_ti),
+            p(ptext$info_hint_tx)
           )
         )
       )
