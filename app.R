@@ -97,7 +97,7 @@ ui <-  tagList(
               width = 5,
               sliderInput(
                 "val_n_per_group", "Sample size per group",
-                min = 5, max = 200, value = 30, step = 1, ticks = FALSE,
+                min = 5, max = 200, value = 70, step = 1, ticks = FALSE,
               ),
               sliderInput(
                 "val_true_effect", "True effect",
@@ -123,7 +123,29 @@ ui <-  tagList(
                 # width = "100px"
                 inline = TRUE
               ),
-              tableOutput("meta_summary")
+
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Std. effect size"),
+                card_body(
+                  h2(textOutput("stand_eff_size"),
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              ),
+              
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Effective power"),
+                card_body(
+                  h2(textOutput("pow_calc_pow"),
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              ),
+
             )
           ),
         ),
@@ -271,20 +293,20 @@ ui <-  tagList(
           h6("Quick guide"),
           p("
             Use the sliders & radio buttons to define the study and sample size.
-            Also asses parameters that give effective power below 80%.
             In the results pane, see how estimated effect sizes and p-values are related
             and how selective publication biases the evidence.
             The bottom pane shows evidence under selective publication compared 
             to 'all-studies-published'.
             "),
           
+          h6("Hint from author"),
+          p("Based on my real-world experience as a statistician, I suspect that
+            many studies that claim 80% power probaly have much less.
+            So with this app, try parameter values that give effective power ~50%
+            and use your brain ;-)"),
           
           h6("Conclusion"),
-          p("Well that is up to you ;-)  
-          
-          ... as a statistician, I can only say that I have seen 
-          how political and strategic reasoning forces wrong assumptions into sample size calculations
-          leading to effective power well below the claimed 80%.")
+          p("Well that is up to you ;-) ")
          
         )
       )
@@ -440,40 +462,15 @@ server <- function(input, output, session) {
 
 
   #---------------------
-  # map summary stats to output mini-tables
-
-  output$meta_summary <- renderTable(
-    {
-      data.frame(
-        Metric = c("Std. effect size", "Effective power"),
-        Value = round(c(
-          meta_calcul()$stand_eff_size,
-          meta_calcul()$pow_calc_pow
-        ), 2)
-      )
-    },
-    colnames = FALSE,
-    bordered = FALSE,
-    striped = FALSE
-  )
-
-  output$true_effect_display <- renderText({
-    paste("True effect size:", meta_results()$true_effect)
-  })
-
-  # --------
+  # map summary stats to output tags
+  output$stand_eff_size          <- renderText({sprintf("%.2f", meta_calcul()$stand_eff_size)})
+  output$pow_calc_pow            <- renderText({sprintf("%.0f%%", 100 * meta_calcul()$pow_calc_pow)})
   output$true_effect             <- renderText({sprintf("%.2f", meta_results()$true_effect)})
   output$mean_from_sign          <- renderText({sprintf("%.2f",meta_results()$mean_from_sign)})
   output$estimated_abs_bias_sign <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_sign)})
   output$mean_from_all           <- renderText({sprintf("%.2f",meta_results()$mean_from_all)})
   output$estimated_abs_bias_ns   <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_ns)})
   
-
- 
-
-
- 
-
   #---------------------
   # map plots to output tags
 

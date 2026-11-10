@@ -68,7 +68,8 @@ render_sim_result_plot <- function(df, input) {
         color = "black",
         fill = NA,
         linewidth = 0.8
-      )
+      ),
+      legend.position = "none"
     )
 }
 
