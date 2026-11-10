@@ -17,7 +17,6 @@ addResourcePath("resources", "resources")
 
 ui <- tagList(
   navbarPage(
-
     # custom formatted title
     title = tags$span(
       style = "display: inline-flex; align-items: center; gap: 10px;",
@@ -28,9 +27,9 @@ ui <- tagList(
     #-------------------------
     # (1) styling and formats
 
-    # apply style for cards 
+    # apply style for cards
     style_cards(),
-    
+
     # main app's theme (initial)
     theme = themes_li$Cerulean,
 
@@ -239,15 +238,35 @@ ui <- tagList(
     # second page
     tabPanel(
       "About",
-      fluidRow()
+      fluidRow(
+        column(
+          width = 4,
+          div(
+            h5("Author"),
+            tags$p(
+              "Serge Zaugg (",
+              tags$a("LinkedIn",
+                href = "https://www.linkedin.com/in/dkifh34rtn345eb5fhrthdbgf45/",
+                target = "_blank"
+              ),
+              ", ",
+              tags$a("GitHub",
+                href = "https://github.com/sergezaugg",
+                target = "_blank"
+              ),
+              ")"
+            )
+          )
+        )
+      )
     ),
-    
-    # to push all elements below to the right 
-    
+
+    # to push all elements below to the right
+
     # nav_spacer(),
-    # 
+    #
     # nav_item(p("Theme")),
-    # 
+    #
     # nav_item(
     #   selectInput(
     #     "theme",
@@ -257,19 +276,18 @@ ui <- tagList(
     #     width = "140px"
     #   )
     # )
-    
-    
-    
   )
 )
 
 
 server <- function(input, output, session) {
-  
-  observeEvent(input$theme, {
-    session$setCurrentTheme(themes_li[[input$theme]])
-  }, ignoreInit = TRUE)
-  
+  observeEvent(input$theme,
+    {
+      session$setCurrentTheme(themes_li[[input$theme]])
+    },
+    ignoreInit = TRUE
+  )
+
   #--------------------------
   # wrap user input into reactive lists
   par_a <- reactive(list(
