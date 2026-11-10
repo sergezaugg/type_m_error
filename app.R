@@ -181,51 +181,23 @@ ui <-  tagList(
                 card_header("True effect"),
                 card_body(
                   h2(textOutput("true_effect"),
-                     style = "color: #7B4DAA; margin: 0; font-size: 16px;"
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
                   )
                 )
               ),
             ),
           
-          
-            column(
-              width = 4,
-              h6("'significant' studies"),
-             
-              card(
-                height = "70px",
-                padding = 0,
-                card_header("Mean effect"),
-                card_body(
-                  h2(textOutput("mean_from_sign"),
-                    style = "color: #7B4DAA; margin: 0; font-size: 16px;"
-                  )
-                )
-              ),
-              
-              card(
-                height = "70px",
-                padding = 0,
-                card_header("Bias"),
-                card_body(
-                  h2(textOutput("estimated_abs_bias_sign"),
-                     style = "color: #7B4DAA; margin: 0; font-size: 16px;"
-                  )
-                )
-              )
-            ),
-            
             column(
               width = 4,
               h6("All studies"),
-             
+              
               card(
                 height = "70px",
                 padding = 0,
                 card_header("Mean effect"),
                 card_body(
                   h2(textOutput("mean_from_all"),
-                     style = "color: #7B4DAA; margin: 0; font-size: 16px;"
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
                   )
                 )
               ),
@@ -236,11 +208,40 @@ ui <-  tagList(
                 card_header("Bias"),
                 card_body(
                   h2(textOutput("estimated_abs_bias_ns"),
-                     style = "color: #7B4DAA; margin: 0; font-size: 16px;"
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              )
+            ) ,
+            
+            column(
+              width = 4,
+              h6("'significant' studies"),
+             
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Mean effect"),
+                card_body(
+                  h2(textOutput("mean_from_sign"),
+                    style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              ),
+              
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Bias"),
+                card_body(
+                  h2(textOutput("estimated_abs_bias_sign"),
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
                   )
                 )
               )
             )
+            
+
             
           )
         )
@@ -248,12 +249,43 @@ ui <-  tagList(
       column(
         width = 4,
         wellPanel(
-          style = "height: 750px;",
+          style = "height: 760px;",
           h5("Underpowered Research Undermines Science"),
-          p("Background"),
-          p("Quick guide"),
-          p("Solution"),
-          p("Methods")
+          
+          h6("Background"),
+          p("
+          Modern research is constrained by competition between researchers, 
+          and the need for fast publication. 
+          Consequently, researchers are incentivized to conduct studies with smaller sample sizes.
+          The claimed power (typically 80%) is often 
+          based on unrealistic assumptions and the effective power can be much lower.
+          Combined with the selective publication of 'significant' results, 
+          this increases the Type M error, i.e. published results overestimate 
+          the true effect size.
+          "),
+          
+          h6("This app"),
+          p("With this app, you can simulate the above phenomena using simple but formal 
+            statistics and assess the severity of the problem."),
+          
+          h6("Quick guide"),
+          p("
+            Use the sliders and radio buttons to define the study and sample size.
+            Many studies have an effective power below 80%, so adjust the parameters accordingly.
+            In the results pane, see how estimated effect sizes and p-values are related
+            and how selective publication based on p-values biases the evidence.
+            The bottom pane shows the evidence under selective publication and compares 
+            it with the results that would be obtained if all studies were published.
+            "),
+          
+          
+          h6("Conclusion"),
+          p("Well that is up to you ;-)  
+          
+          ... as a statistician, I can only confirm that modern research tends to boldly 
+            pipe wrong assumption into sample size calculations (for political and strategic resons) 
+            leading to effective power well below the claimed 80%.")
+         
         )
       )
     )
@@ -425,65 +457,22 @@ server <- function(input, output, session) {
     striped = FALSE
   )
 
-
   output$true_effect_display <- renderText({
     paste("True effect size:", meta_results()$true_effect)
   })
 
-  # output$true_effect_df <- renderTable(
-  #   {
-  #     data.frame(
-  #       Metric = c("True effect size"),
-  #       Value = round(c(meta_results()$true_effect), 2)
-  #     )
-  #   },
-  #   colnames = FALSE,
-  #   bordered = FALSE,
-  #   striped = FALSE
-  # )
-
-  
   # --------
-  
-  output$true_effect             <- renderText({meta_results()$true_effect})
-  
-  output$mean_from_sign          <- renderText({meta_results()$mean_from_sign})
-  output$estimated_abs_bias_sign <- renderText({meta_results()$estimated_abs_bias_sign})
-  output$mean_from_all           <- renderText({meta_results()$mean_from_all})
-  output$estimated_abs_bias_ns   <- renderText({meta_results()$estimated_abs_bias_ns})
+  output$true_effect             <- renderText({sprintf("%.2f", meta_results()$true_effect)})
+  output$mean_from_sign          <- renderText({sprintf("%.2f",meta_results()$mean_from_sign)})
+  output$estimated_abs_bias_sign <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_sign)})
+  output$mean_from_all           <- renderText({sprintf("%.2f",meta_results()$mean_from_all)})
+  output$estimated_abs_bias_ns   <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_ns)})
   
 
-  # output$meta_from_signif <- renderTable(
-  #   {
-  #     data.frame(
-  #       Metric = c("Mean effect size", "Bias"),
-  #       Value = round(c(
-  #         meta_results()$mean_from_sign,
-  #         meta_results()$estimated_abs_bias_sign
-  #       ), 2)
-  #     )
-  #   },
-  #   colnames = FALSE,
-  #   bordered = FALSE,
-  #   striped = FALSE
-  # )
+ 
 
 
-  # output$meta_from_nonsig <- renderTable(
-  #   {
-  #     data.frame(
-  #       Metric = c("Mean effect size", "Bias"),
-  #       Value = round(c(
-  #         meta_results()$mean_from_all,
-  #         meta_results()$estimated_abs_bias_ns
-  #       ), 2)
-  #     )
-  #   },
-  #   colnames = FALSE,
-  #   bordered = FALSE,
-  #   striped = FALSE
-  # )
-
+ 
 
   #---------------------
   # map plots to output tags
