@@ -270,19 +270,24 @@ ui <- tagList(
     ),
     
     # to push all elements below to the right 
-    nav_spacer(),
     
-    nav_item(p("Theme")),
-    
-    nav_item(
-      selectInput(
-        "theme",
-        label = NULL,
-        choices = names(themes_li),
-        selected = "cerulean",
-        width = "140px"
+      nav_spacer(),
+      
+      nav_item(p("Theme")),
+     
+    if (FALSE) { 
+      nav_item(
+        selectInput(
+          "theme",
+          label = NULL,
+          choices = names(themes_li),
+          selected = "cerulean",
+          width = "140px"
+        )
       )
-    )
+    }
+    
+    
   )
 )
 
