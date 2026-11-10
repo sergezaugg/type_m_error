@@ -17,19 +17,7 @@ addResourcePath("resources", "resources")
 
 ui <- tagList(
   navbarPage(
-    
-    tags$head(
-      tags$style(HTML("
-    body {
-      transition: opacity 0.80s ease-in-out;
-    }
 
-    body.theme-changing {
-      opacity: 0.01;
-    }
-    "))
-    ),
-    
     # custom formatted title
     title = tags$span(
       style = "display: inline-flex; align-items: center; gap: 10px;",
@@ -44,7 +32,7 @@ ui <- tagList(
     style_cards(),
     
     # main app's theme (initial)
-    theme = add_custom_css(bs_theme(version = 5,bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
+    theme = themes_li$Cerulean,
 
     # add static text for version and © at bottom
     tags$div(

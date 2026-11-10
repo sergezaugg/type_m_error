@@ -21,6 +21,9 @@ themes_li <- list(
   "Flatly" = add_custom_css(bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee")),
   "Morph"  = add_custom_css(bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee"))
 )
+# Precompile
+invisible(lapply(themes_li, bs_theme_dependencies))
+
 
 # custom style for compact cards 
 style_cards <- function() {
