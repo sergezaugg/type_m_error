@@ -31,11 +31,11 @@ ui <- tagList(
     style_cards(),
     
     # main app's theme (initial)
-    theme = add_custom_css(bs_theme(version = 5,bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
+    theme = add_custom_css(bs_theme(version = 5,bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
 
     # add static text for version and © at bottom
     tags$div(
-      "v0.9.0 - © 2026 Serge Zaugg",
+      "v0.9.1 - © 2026 Serge Zaugg",
       style = "position: fixed;bottom: 8px; left: 20px;
       font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
     "
@@ -85,7 +85,7 @@ ui <- tagList(
                   inline = TRUE
                 ),
                 radioButtons("val_m_studies", "N studies to simulate",
-                  choices = c(10, 50, 100, 500), selected = 100,
+                  choices = c(10, 50, 100), selected = 100,
                   # width = "100px"
                   inline = TRUE
                 ),
@@ -270,19 +270,24 @@ ui <- tagList(
     ),
     
     # to push all elements below to the right 
-    nav_spacer(),
     
-    nav_item(p("Theme")),
-    
-    nav_item(
-      selectInput(
-        "theme",
-        label = NULL,
-        choices = names(themes_li),
-        selected = "cerulean",
-        width = "140px"
+      nav_spacer(),
+      
+      nav_item(p("Theme")),
+     
+    if (FALSE) { 
+      nav_item(
+        selectInput(
+          "theme",
+          label = NULL,
+          choices = names(themes_li),
+          selected = "cerulean",
+          width = "140px"
+        )
       )
-    )
+    }
+    
+    
   )
 )
 
