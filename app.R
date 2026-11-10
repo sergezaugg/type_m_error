@@ -221,17 +221,21 @@ server <- function(input, output, session) {
 
   #--------------------------
   # Simulate one realized data set when rerun button clicked
-  df_sim_results <- eventReactive(
-    eventExpr = input$btn_rerun,
-    ignoreNULL = FALSE, # to run once before button click
-    valueExpr = {
-      combine_dfs_lin(par_a(), par_b())
-    }
+  df_sim_results <- reactive(
+    combine_dfs_lin(par_a(), par_b())
   )
 
   sim_plot <- reactive({
     render_example_dataset_plot(df = df_sim_results())
-  })
+  }) |> # do when any of below items is changed
+    bindEvent(
+      input$btn_rerun,
+      input$val_m_studies,
+      input$val_n_per_group,
+      input$val_true_effect,
+      input$val_true_sd,
+      ignoreNULL = FALSE
+    )
 
 
   #-------------------------------
