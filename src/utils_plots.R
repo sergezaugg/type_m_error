@@ -72,7 +72,3 @@ render_sim_result_plot <- function(df, input) {
       legend.position = "none"
     )
 }
-
-
-
-
