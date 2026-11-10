@@ -85,7 +85,7 @@ ui <- tagList(
                   inline = TRUE
                 ),
                 radioButtons("val_m_studies", "N studies to simulate",
-                  choices = c(10, 50, 100, 500), selected = 100,
+                  choices = c(10, 50, 100), selected = 100,
                   # width = "100px"
                   inline = TRUE
                 ),
