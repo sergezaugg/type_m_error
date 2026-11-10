@@ -9,6 +9,7 @@ library(bslib)
 
 source("src/utils_sim.R")
 source("src/utils_plots.R")
+source("src/styles.R")
 
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
@@ -33,6 +34,8 @@ themes <- list(
 )
 
 ui <- tagList(
+  
+  # tags$head(style_cards()),
 
   navbarPage(
 
@@ -57,23 +60,29 @@ ui <- tagList(
     "
     ),
 
-    tags$style(HTML("
-    .card-header {
-      padding-top: 4px;
-      padding-bottom: 4px;
-      font-size: 16px;
-      line-height: 1.2;
-    }
-    ")),
+    # style_card_header(),
     
-    tags$style(HTML("
-    .card-body {
-      padding-top: 4px;
-      padding-bottom: 4px;
-      font-size: 16px;
-      line-height: 1.2;
-    }
-    ")),
+    style_cards(),
+    
+    # tags$style(HTML("
+    # .card-header {
+    #   padding-top: 4px;
+    #   padding-bottom: 4px;
+    #   font-size: 16px;
+    #   line-height: 1.2;
+    # }
+    # ")),
+    # 
+    
+    
+    # tags$style(HTML("
+    # .card-body {
+    #   padding-top: 4px;
+    #   padding-bottom: 4px;
+    #   font-size: 16px;
+    #   line-height: 1.2;
+    # }
+    # ")),
 
 
     #-------------------------
