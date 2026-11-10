@@ -3,9 +3,9 @@
 # Author : Serge Zaugg
 # ---------------------------
 
-# helper function : simulate data based on b0 
-simulate_linear_data <- function(par){ 
-  x <- rep(par$x, par$n) 
+# helper function : simulate data based on b0
+simulate_linear_data <- function(par) {
+  x <- rep(par$x, par$n)
   y <- par$b0
   y <- y + rnorm(n = par$n, mean = 0, sd = par$sd_res)
   df <- tibble(predictor = x, response = y)
@@ -20,11 +20,6 @@ combine_dfs_lin <- function(...) {
     df
   })
   dfs <- bind_rows(dfs)
-  dfs <- dfs %>% mutate(group = factor(group) )
+  dfs <- dfs %>% mutate(group = factor(group))
   return(dfs)
 }
-
-
-
-
-

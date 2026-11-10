@@ -9,300 +9,290 @@ library(bslib)
 
 source("src/utils_sim.R")
 source("src/utils_plots.R")
+source("src/styles.R")
 
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
-
-
-ui <-  tagList(
+ui <- tagList(
   navbarPage(
-  
-  #-------------------------    
-  # (1) styling and formats  
-  
-  # custom formatted title 
-  title = tags$span(
-    style = "display: inline-flex; align-items: center; gap: 10px;",
-    tags$img(src = "resources/z_logo_blue.png", height = "30px"),
-    tags$span("Underpowered Research Undermines Science")
-  ),
-  
-  # main app's theme 
-  theme = bs_theme(
-    version = 5,
-    bootswatch = "zephyr", # zephyr, morph, quartz, litera, lumen, cosmo,
-    # bg = "#dddddd", 
-    # fg = "#000000", 
-    primary = "#aabbcc", 
-    secondary = "#ccddee"
-  ),
+    
+    # custom formatted title
+    title = tags$span(
+      style = "display: inline-flex; align-items: center; gap: 10px;",
+      tags$img(src = "resources/z_logo_blue.png", height = "30px"),
+      tags$span("Underpowered Research Undermines Science")
+    ),
 
-  # add static text for version and © at bottom
-  tags$div(
-    "v0.5.0 - © 2026 Serge Zaugg",
-    style = "position: fixed;bottom: 8px; left: 20px;
+    #-------------------------
+    # (1) styling and formats
+
+    # apply style for cards 
+    style_cards(),
+    
+    # main app's theme (initial)
+    theme = add_custom_css(bs_theme(version = 5,bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
+
+    # add static text for version and © at bottom
+    tags$div(
+      "v0.9.0 - © 2026 Serge Zaugg",
+      style = "position: fixed;bottom: 8px; left: 20px;
       font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
     "
-  ),
-  
-  # spacing
-  tags$head(
-    # adds v-space below each wellPanel
-    tags$style(HTML(".well {margin-bottom: 10px;}")),
-    # adds h-space between columns
-    tags$style(HTML(".row {--bs-gutter-x: 10px;}")),
-    # adds h-space left and right of main canevas
-    tags$style(HTML(".container-fluid {padding-left: 50px; padding-right: 50px;}"))
-  ),
-  
+    ),
+
+    
+    
   
 
-  tags$style(HTML("
-  .card-header {
-    padding-top: 4px;
-    padding-bottom: 4px;
-    font-size: 16px;
-    line-height: 1.2;
-  }
-  ")),
-  
-  tags$style(HTML("
-  .card-body {
-    padding-top: 4px;
-    padding-bottom: 4px;
-    font-size: 16px;
-    line-height: 1.2;
-  }
-  ")),
+    #-------------------------
+    # (2) pages
 
-  
-
-  #-------------------------    
-  # (2) pages   
-
-  # first page
-  tabPanel(
-    "Full Sim",
-    fluidRow(
-      
-      column(
-        width = 4,
-        wellPanel(
-          style = "height: 400px;",
-          h5("Simulation parameters"),
-          div(style = "height: 25px;"),
-          fluidRow(
-            column(
-              width = 5,
-              sliderInput(
-                "val_n_per_group", "Sample size per group",
-                min = 5, max = 200, value = 30, step = 1, ticks = FALSE,
+    # first page
+    tabPanel(
+      "Full Sim",
+      fluidRow(
+        column(
+          width = 4,
+          wellPanel(
+            style = "height: 400px;",
+            h5("Simulation parameters"),
+            div(style = "height: 25px;"),
+            fluidRow(
+              column(
+                width = 5,
+                sliderInput(
+                  "val_n_per_group", "Sample size per group",
+                  min = 5, max = 200, value = 70, step = 1, ticks = FALSE,
+                ),
+                sliderInput(
+                  "val_true_effect", "True effect",
+                  min = 0, max = 1, value = 0.5, step = 0.05, ticks = FALSE,
+                ),
+                sliderInput(
+                  "val_true_sd", "True SD",
+                  min = 0.1, max = 3, value = 1.5, step = 0.1, ticks = FALSE,
+                )
               ),
-              sliderInput(
-                "val_true_effect", "True effect",
-                min = 0, max = 1, value = 0.5, step = 0.05, ticks = FALSE,
-              ),
-              sliderInput(
-                "val_true_sd", "True SD",
-                min = 0.1, max = 3, value = 1.5, step = 0.1, ticks = FALSE,
+              # h-space empty columns
+              column(width = 2, ),
+              # 2nd col
+              column(
+                width = 5,
+                radioButtons("val_alpha", "Significance level (α)",
+                  choices = c("0.01" = 0.01, "0.05" = 0.05, "0.10" = 0.10), selected = "0.05",
+                  # width = "100px"
+                  inline = TRUE
+                ),
+                radioButtons("val_m_studies", "N studies to simulate",
+                  choices = c(10, 50, 100, 500), selected = 100,
+                  # width = "100px"
+                  inline = TRUE
+                ),
+                card(
+                  height = "70px",
+                  padding = 0,
+                  card_header("Std. effect size"),
+                  card_body(
+                    h2(textOutput("stand_eff_size"),
+                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    )
+                  )
+                ),
+                card(
+                  height = "70px",
+                  padding = 0,
+                  card_header("Effective power"),
+                  card_body(
+                    h2(textOutput("pow_calc_pow"),
+                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    )
+                  )
+                ),
               )
             ),
-            # h-space empty columns
-            column(width = 2,),
-            # 2nd col
-            column(
-              width = 5,
-              radioButtons("val_alpha", "Significance level (α)",
-                choices = c("0.01" = 0.01, "0.05" = 0.05, "0.10" = 0.10), selected = "0.05",
-                # width = "100px"
-                inline = TRUE
-              ),
-              radioButtons("val_m_studies", "N studies to simulate",
-                choices = c(10, 50, 100, 500), selected = 100,
-                # width = "100px"
-                inline = TRUE
-              ),
-              tableOutput("meta_summary")
-            )
           ),
-        ),
-        wellPanel(
-          style = "height: 350px;",
-          fluidRow(
-            column(width = 5,
-              h5("Explore datasets"),
-              p("Inspect a few simulated datasets.
+          wellPanel(
+            style = "height: 350px;",
+            fluidRow(
+              column(
+                width = 5,
+                h5("Explore datasets"),
+                p("Inspect a few simulated datasets.
                 Each dataset is different due to simlated random error (SD).
                 In full simulation, multiples datasets are generated.
-                ")       
-            ),
-            column(width = 7,
-              div(
-               style = "text-align: right;",
-               actionButton("btn_rerun", "Next data set")
+                ")
               ),
-              div(style = "height: 15px;"),
-              plotOutput("sim_plot", height = "250px")
-            )
-          )
-        )
-      ),
-      column(
-        width = 4,
-        wellPanel(
-          style = "height: 500px;",
-          fluidRow(
-            column(
-              width = 6,
-              h5("Simulation result")
-            ),
-            column(
-              width = 6,
-              div(
-                style = "text-align: right;",
-                actionButton("btn_rerun_sim", "Re-run simulation")
+              column(
+                width = 7,
+                div(
+                  style = "text-align: right;",
+                  actionButton("btn_rerun", "Next data set")
+                ),
+                div(style = "height: 15px;"),
+                plotOutput("sim_plot", height = "250px")
               )
             )
-          ),
-          div(style = "height: 15px;"),
-          plotOutput("resu_plot", height = "400px")
+          )
         ),
-        wellPanel(
-          style = "height: 250px;",
-          
-          fluidRow(
-          
-            column(width = 4,
-              h6("Reference"),
-              card(
-                height = "70px",
-                padding = 0,
-                card_header("True effect"),
-                card_body(
-                  h2(textOutput("true_effect"),
-                     style = "color: #0099ff; margin: 0; font-size: 20px;"
-                  )
-                )
+        column(
+          width = 4,
+          wellPanel(
+            style = "height: 500px;",
+            fluidRow(
+              column(
+                width = 6,
+                h5("Simulation result")
               ),
-            ),
-          
-            column(
-              width = 4,
-              h6("All studies"),
-              
-              card(
-                height = "70px",
-                padding = 0,
-                card_header("Mean effect"),
-                card_body(
-                  h2(textOutput("mean_from_all"),
-                     style = "color: #0099ff; margin: 0; font-size: 20px;"
-                  )
-                )
-              ),
-              
-              card(
-                height = "70px",
-                padding = 0,
-                card_header("Bias"),
-                card_body(
-                  h2(textOutput("estimated_abs_bias_ns"),
-                     style = "color: #0099ff; margin: 0; font-size: 20px;"
-                  )
+              column(
+                width = 6,
+                div(
+                  style = "text-align: right;",
+                  actionButton("btn_rerun_sim", "Re-run simulation")
                 )
               )
-            ) ,
-            
-            column(
-              width = 4,
-              h6("'significant' studies"),
-             
-              card(
-                height = "70px",
-                padding = 0,
-                card_header("Mean effect"),
-                card_body(
-                  h2(textOutput("mean_from_sign"),
-                    style = "color: #0099ff; margin: 0; font-size: 20px;"
+            ),
+            div(style = "height: 15px;"),
+            plotOutput("resu_plot", height = "400px")
+          ),
+          wellPanel(
+            style = "height: 250px;",
+            fluidRow(
+              column(
+                width = 4,
+                h6("Reference"),
+                card(
+                  height = "70px",
+                  padding = 0,
+                  card_header("True effect"),
+                  card_body(
+                    h2(textOutput("true_effect"),
+                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    )
+                  )
+                ),
+              ),
+              column(
+                width = 4,
+                h6("All studies"),
+                card(
+                  height = "70px",
+                  padding = 0,
+                  card_header("Mean effect"),
+                  card_body(
+                    h2(textOutput("mean_from_all"),
+                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    )
+                  )
+                ),
+                card(
+                  height = "70px",
+                  padding = 0,
+                  card_header("Bias"),
+                  card_body(
+                    h2(textOutput("estimated_abs_bias_ns"),
+                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    )
                   )
                 )
               ),
-              
-              card(
-                height = "70px",
-                padding = 0,
-                card_header("Bias"),
-                card_body(
-                  h2(textOutput("estimated_abs_bias_sign"),
-                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+              column(
+                width = 4,
+                h6("'significant' studies"),
+                card(
+                  height = "70px",
+                  padding = 0,
+                  card_header("Mean effect"),
+                  card_body(
+                    h2(textOutput("mean_from_sign"),
+                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    )
+                  )
+                ),
+                card(
+                  height = "70px",
+                  padding = 0,
+                  card_header("Bias"),
+                  card_body(
+                    h2(textOutput("estimated_abs_bias_sign"),
+                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    )
                   )
                 )
               )
             )
-            
-
-            
           )
-        )
-      ),
-      column(
-        width = 4,
-        wellPanel(
-          style = "height: 760px;",
-          h5("Underpowered Research Undermines Science"),
-          
-          h6("Background"),
-          p("
-          Research is constrained by competition between researchers 
-          and the need for fast publication. 
-          Consequently, researchers are incentivized to conduct studies with smaller sample sizes.
-          The claimed power (typically 80%) is often 
-          based on unrealistic assumptions and the effective power is much lower.
-          Combined with the selective publication of 'significant' results, 
-          this increases the Type M error (Magnitude error), i.e. published results overestimate 
-          the true effect.
-          "),
-          
-          h6("This app"),
-          p("With this app, you can simulate the above phenomena using simple but formal 
+        ),
+        column(
+          width = 4,
+          wellPanel(
+            style = "height: 760px;",
+            h5("Underpowered Research Undermines Science"),
+            h6("Background"),
+            p("
+            Research is constrained by competition between researchers
+            and the need for fast publication.
+            Consequently, researchers are incentivized to conduct studies with smaller sample sizes.
+            The claimed power (typically 80%) is often
+            based on unrealistic assumptions and the effective power is much lower.
+            Combined with the selective publication of 'significant' results,
+            this increases the Type M error (Magnitude error), i.e. published results overestimate
+            the true effect.
+            "),
+            h6("This app"),
+            p("With this app, you can simulate the above phenomena using simple but formal
             statistics and assess the severity of the problem."),
-          
-          h6("Quick guide"),
-          p("
+            h6("Quick guide"),
+            p("
             Use the sliders & radio buttons to define the study and sample size.
-            Also asses parameters that give effective power below 80%.
             In the results pane, see how estimated effect sizes and p-values are related
             and how selective publication biases the evidence.
-            The bottom pane shows evidence under selective publication compared 
+            The bottom pane shows evidence under selective publication compared
             to 'all-studies-published'.
             "),
-          
-          
-          h6("Conclusion"),
-          p("Well that is up to you ;-)  
-          
-          ... as a statistician, I can only say that I have seen 
-          how political and strategic reasoning forces wrong assumptions into sample size calculations
-          leading to effective power well below the claimed 80%.")
-         
+            h6("Hint from author"),
+            p("Based on my real-world experience as a statistician, I suspect that
+            many studies that claim 80% power probaly have much less.
+            So with this app, try parameter values that give effective power ~50%.
+            "),
+            h6("Conclusion"),
+            p("Well that is up to you ...")
+          )
         )
       )
+    ),
+
+
+    # second page
+    tabPanel(
+      "About",
+      fluidRow()
+    ),
+    
+    # to push all elements below to the right 
+    nav_spacer(),
+    
+    nav_item(p("Theme")),
+    
+    nav_item(
+      selectInput(
+        "theme",
+        label = NULL,
+        choices = names(themes_li),
+        selected = "cerulean",
+        width = "140px"
+      )
     )
-  ),
-
-
-  # second page
-  tabPanel(
-    "About",
-    fluidRow()
   )
-)
-
 )
 
 
 server <- function(input, output, session) {
+  
+  observeEvent(input$theme, {
+    session$setCurrentTheme(themes_li[[input$theme]])
+  }, ignoreInit = TRUE)
+  
   #--------------------------
   # wrap user input into reactive lists
   par_a <- reactive(list(
@@ -440,39 +430,28 @@ server <- function(input, output, session) {
 
 
   #---------------------
-  # map summary stats to output mini-tables
-
-  output$meta_summary <- renderTable(
-    {
-      data.frame(
-        Metric = c("Std. effect size", "Effective power"),
-        Value = round(c(
-          meta_calcul()$stand_eff_size,
-          meta_calcul()$pow_calc_pow
-        ), 2)
-      )
-    },
-    colnames = FALSE,
-    bordered = FALSE,
-    striped = FALSE
-  )
-
-  output$true_effect_display <- renderText({
-    paste("True effect size:", meta_results()$true_effect)
+  # map summary stats to output tags
+  output$stand_eff_size <- renderText({
+    sprintf("%.2f", meta_calcul()$stand_eff_size)
   })
-
-  # --------
-  output$true_effect             <- renderText({sprintf("%.2f", meta_results()$true_effect)})
-  output$mean_from_sign          <- renderText({sprintf("%.2f",meta_results()$mean_from_sign)})
-  output$estimated_abs_bias_sign <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_sign)})
-  output$mean_from_all           <- renderText({sprintf("%.2f",meta_results()$mean_from_all)})
-  output$estimated_abs_bias_ns   <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_ns)})
-  
-
- 
-
-
- 
+  output$pow_calc_pow <- renderText({
+    sprintf("%.0f%%", 100 * meta_calcul()$pow_calc_pow)
+  })
+  output$true_effect <- renderText({
+    sprintf("%.2f", meta_results()$true_effect)
+  })
+  output$mean_from_sign <- renderText({
+    sprintf("%.2f", meta_results()$mean_from_sign)
+  })
+  output$estimated_abs_bias_sign <- renderText({
+    sprintf("%.2f", meta_results()$estimated_abs_bias_sign)
+  })
+  output$mean_from_all <- renderText({
+    sprintf("%.2f", meta_results()$mean_from_all)
+  })
+  output$estimated_abs_bias_ns <- renderText({
+    sprintf("%.2f", meta_results()$estimated_abs_bias_ns)
+  })
 
   #---------------------
   # map plots to output tags

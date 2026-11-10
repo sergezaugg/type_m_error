@@ -13,6 +13,7 @@
 # install.packages("styler")
 # styler::style_file("app.R")
 # styler::style_file("src/utils_plots.R")
+# styler::style_file("src/utils_sim.R")
 
 
 source("src/utils_sim.R")
