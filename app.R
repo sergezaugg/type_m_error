@@ -13,13 +13,24 @@ source("src/utils_plots.R")
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
-themes <- list(
-  "Zephyr" = bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee"),
-  "Flatly" = bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee"),
-  "Litera" = bs_theme(version = 5, bootswatch = "litera", primary = "#aabbcc", secondary = "#ccddee"),
-  "Morph"  = bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee")
-)
+# spacing
+add_custom_css <- function(theme) {
+  bs_add_rules(
+    theme,
+    "
+    .well {margin-bottom: 10px;}
+    .row {--bs-gutter-x: 10px;}
+    .container-fluid {padding-left: 50px; padding-right: 50px;}
+    "
+  )
+}
 
+themes <- list(
+  "Cerulean" = add_custom_css(bs_theme(version = 5, bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
+  "Zephyr" = add_custom_css(bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
+  "Flatly" = add_custom_css(bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee")),
+  "Morph"  = add_custom_css(bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee"))
+)
 
 ui <- tagList(
 
@@ -36,7 +47,7 @@ ui <- tagList(
     ),
 
     # main app's theme (initial)
-    theme = bs_theme(version = 5,bootswatch = "zephyr",primary = "#aabbcc",secondary = "#ccddee"),
+    theme = add_custom_css(bs_theme(version = 5,bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
 
     # add static text for version and © at bottom
     tags$div(
@@ -46,17 +57,6 @@ ui <- tagList(
     "
     ),
 
-    # spacing
-    tags$head(
-      # adds v-space below each wellPanel
-      tags$style(HTML(".well {margin-bottom: 10px;}")),
-      # adds h-space between columns
-      tags$style(HTML(".row {--bs-gutter-x: 10px;}")),
-      # adds h-space left and right of main canevas
-      tags$style(HTML(".container-fluid {padding-left: 50px; padding-right: 50px;}"))
-    ),
-    
- 
     tags$style(HTML("
     .card-header {
       padding-top: 4px;
@@ -284,10 +284,10 @@ ui <- tagList(
             h6("Hint from author"),
             p("Based on my real-world experience as a statistician, I suspect that
             many studies that claim 80% power probaly have much less.
-            So with this app, try parameter values that give effective power ~50%
-            and use your brain ;-)"),
+            So with this app, try parameter values that give effective power ~50%.
+            "),
             h6("Conclusion"),
-            p("Well that is up to you ;-) ")
+            p("Well that is up to you ...")
           )
         )
       )
@@ -310,7 +310,7 @@ ui <- tagList(
         "theme",
         label = NULL,
         choices = names(themes),
-        selected = "zephyr",
+        selected = "cerulean",
         width = "140px"
       )
     )
