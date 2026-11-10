@@ -3,14 +3,6 @@
 # Author : Serge Zaugg
 # ---------------------------
 
-themes_li <- list(
-  "Cerulean" = add_custom_css(bs_theme(version = 5, bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
-  "Zephyr" = add_custom_css(bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
-  "Flatly" = add_custom_css(bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee")),
-  "Morph"  = add_custom_css(bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee"))
-)
-
-
 # spacing of panels 'wells' and cols
 add_custom_css <- function(theme) {
   bs_add_rules(
@@ -22,6 +14,15 @@ add_custom_css <- function(theme) {
     "
   )
 }
+
+
+themes_li <- list(
+  "Cerulean" = add_custom_css(bs_theme(version = 5, bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
+  "Zephyr" = add_custom_css(bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
+  "Flatly" = add_custom_css(bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee")),
+  "Morph"  = add_custom_css(bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee"))
+)
+
 
 # custom style for compact cards 
 style_cards <- function() {

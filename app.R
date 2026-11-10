@@ -14,13 +14,6 @@ source("src/styles.R")
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
-# themes_li <- list(
-#   "Cerulean" = add_custom_css(bs_theme(version = 5, bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
-#   "Zephyr" = add_custom_css(bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
-#   "Flatly" = add_custom_css(bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee")),
-#   "Morph"  = add_custom_css(bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee"))
-# )
-
 ui <- tagList(
   navbarPage(
     
