@@ -12,6 +12,7 @@ simulate_linear_data <- function(par) {
   return(df)
 }
 
+
 combine_dfs_lin <- function(...) {
   pars <- list(...)
   dfs <- lapply(seq_along(pars), function(i) {
@@ -23,3 +24,20 @@ combine_dfs_lin <- function(...) {
   dfs <- dfs %>% mutate(group = factor(group))
   return(dfs)
 }
+
+
+fit_and_prep_mod_summary <- function(data, i){
+  mod01 <- lm(response ~ group, data = data)
+  tibble(
+    iter = i,
+    term = names(coef(mod01)),
+    estimate = coef(mod01),
+    conf_lo = confint(mod01)[, 1],
+    conf_up = confint(mod01)[, 2],
+    p_value = summary(mod01)$coefficients[, 4]
+  )  
+}
+
+
+
+

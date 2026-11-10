@@ -244,19 +244,19 @@ ui <- tagList(
     
     # to push all elements below to the right 
     
-      # nav_spacer(),
-      # 
-      # nav_item(p("Theme")),
-      # 
-      # nav_item(
-      #   selectInput(
-      #     "theme",
-      #     label = NULL,
-      #     choices = names(themes_li),
-      #     selected = "cerulean",
-      #     width = "140px"
-      #   )
-      # )
+    # nav_spacer(),
+    # 
+    # nav_item(p("Theme")),
+    # 
+    # nav_item(
+    #   selectInput(
+    #     "theme",
+    #     label = NULL,
+    #     choices = names(themes_li),
+    #     selected = "cerulean",
+    #     width = "140px"
+    #   )
+    # )
     
     
     
@@ -334,16 +334,7 @@ server <- function(input, output, session) {
   df_esti_all <- reactive({
     map_dfr(1:as.numeric(input$val_m_studies), function(i) {
       df_all <- combine_dfs_lin(par_a(), par_b())
-      mod01 <- lm(response ~ group, data = df_all)
-
-      tibble(
-        iter = i,
-        term = names(coef(mod01)),
-        estimate = coef(mod01),
-        conf_lo = confint(mod01)[, 1],
-        conf_up = confint(mod01)[, 2],
-        p_value = summary(mod01)$coefficients[, 4]
-      )
+      fit_and_prep_mod_summary(data = df_all, i = i)
     })
   }) |> # do the simulation when any of below items is changed
     bindEvent(
