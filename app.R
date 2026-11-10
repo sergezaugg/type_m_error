@@ -9,32 +9,36 @@ library(bslib)
 
 source("src/utils_sim.R")
 source("src/utils_plots.R")
+
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
-# style_pannels <- "background-color: #220022; padding: 15px; border-radius: 5px; height: 700px;"
-# bs_theme
-# zephyr  +++++ morph, +++   quartz, ++    # litera, ++    # lumen, +  # cosmo, +
 
-ui <- navbarPage(
+
+ui <-  tagList(
+  navbarPage(
   
-  # title = "Underpowered Research Undermines Science",
+  #-------------------------    
+  # (1) styling and formats  
+  
+  # custom formatted title 
   title = tags$span(
     style = "display: inline-flex; align-items: center; gap: 10px;",
-    tags$img(src = "resources/z_logo_violet.png", height = "30px"),
+    tags$img(src = "resources/z_logo_blue.png", height = "30px"),
     tags$span("Underpowered Research Undermines Science")
   ),
   
+  # main app's theme 
   theme = bs_theme(
     version = 5,
-    bootswatch = "zephyr", # "litera",
+    bootswatch = "zephyr", # zephyr, morph, quartz, litera, lumen, cosmo,
     # bg = "#dddddd", 
     # fg = "#000000", 
     primary = "#aabbcc", 
     secondary = "#ccddee"
   ),
 
-  # version and (c) at bottom
+  # add static text for version and © at bottom
   tags$div(
     "v0.5.0 - © 2026 Serge Zaugg",
     style = "position: fixed;bottom: 8px; left: 20px;
@@ -42,20 +46,42 @@ ui <- navbarPage(
     "
   ),
   
+  # spacing
   tags$head(
-    tags$style(HTML("
-    .well {
-      margin-bottom: 15px;
-    }
-  "))
+    # adds v-space below each wellPanel
+    tags$style(HTML(".well {margin-bottom: 10px;}")),
+    # adds h-space between columns
+    tags$style(HTML(".row {--bs-gutter-x: 10px;}")),
+    # adds h-space left and right of main canevas
+    tags$style(HTML(".container-fluid {padding-left: 50px; padding-right: 50px;}"))
   ),
   
-
-  
   
 
+  tags$style(HTML("
+  .card-header {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+  ")),
+  
+  tags$style(HTML("
+  .card-body {
+    padding-top: 4px;
+    padding-bottom: 4px;
+    font-size: 16px;
+    line-height: 1.2;
+  }
+  ")),
 
-  # first tab
+  
+
+  #-------------------------    
+  # (2) pages   
+
+  # first page
   tabPanel(
     "Full Sim",
     fluidRow(
@@ -65,29 +91,37 @@ ui <- navbarPage(
         wellPanel(
           style = "height: 400px;",
           h5("Simulation parameters"),
+          div(style = "height: 25px;"),
           fluidRow(
             column(
-              width = 6,
+              width = 5,
               sliderInput(
                 "val_n_per_group", "Sample size per group",
-                min = 5, max = 200, value = 30, step = 1
+                min = 5, max = 200, value = 30, step = 1, ticks = FALSE,
               ),
               sliderInput(
                 "val_true_effect", "True effect",
-                min = 0, max = 1, value = 0.5, step = 0.05
+                min = 0, max = 1, value = 0.5, step = 0.05, ticks = FALSE,
               ),
               sliderInput(
                 "val_true_sd", "True SD",
-                min = 0.1, max = 3, value = 1.0, step = 0.1
+                min = 0.1, max = 3, value = 1.5, step = 0.1, ticks = FALSE,
               )
             ),
+            # h-space empty columns
+            column(width = 2,),
+            # 2nd col
             column(
-              width = 6,
-              selectInput("val_alpha", "Significance level (α)",
-                choices = c("0.01" = 0.01, "0.05" = 0.05, "0.10" = 0.10), selected = "0.05"
+              width = 5,
+              radioButtons("val_alpha", "Significance level (α)",
+                choices = c("0.01" = 0.01, "0.05" = 0.05, "0.10" = 0.10), selected = "0.05",
+                # width = "100px"
+                inline = TRUE
               ),
-              selectInput("val_m_studies", "N studies to simulate",
-                choices = c(10, 50, 100, 500), selected = 100
+              radioButtons("val_m_studies", "N studies to simulate",
+                choices = c(10, 50, 100, 500), selected = 100,
+                # width = "100px"
+                inline = TRUE
               ),
               tableOutput("meta_summary")
             )
@@ -97,11 +131,10 @@ ui <- navbarPage(
           style = "height: 350px;",
           fluidRow(
             column(width = 5,
-              h5("Explore simulated datasets"),
-              p("Inspect datasets simulated with selected parameters.
-                Each dataset is different due to random SD.
-                In full simulation, multiples datasets are generated, each gives a point on 
-                simulation result plot.
+              h5("Explore datasets"),
+              p("Inspect a few simulated datasets.
+                Each dataset is different due to simlated random error (SD).
+                In full simulation, multiples datasets are generated.
                 ")       
             ),
             column(width = 7,
@@ -137,44 +170,135 @@ ui <- navbarPage(
         ),
         wellPanel(
           style = "height: 250px;",
-          div(
-            style = "display: flex; justify-content: center;",
-            tableOutput("true_effect_df")
-          ),
+          
           fluidRow(
-            column(
-              width = 6,
-              h6("From 'significant' studies"),
-              tableOutput("meta_from_signif")
+          
+            column(width = 4,
+              h6("Reference"),
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("True effect"),
+                card_body(
+                  h2(textOutput("true_effect"),
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              ),
             ),
+          
             column(
-              width = 6,
-              h6("From all studies"),
-              tableOutput("meta_from_nonsig")
+              width = 4,
+              h6("All studies"),
+              
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Mean effect"),
+                card_body(
+                  h2(textOutput("mean_from_all"),
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              ),
+              
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Bias"),
+                card_body(
+                  h2(textOutput("estimated_abs_bias_ns"),
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              )
+            ) ,
+            
+            column(
+              width = 4,
+              h6("'significant' studies"),
+             
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Mean effect"),
+                card_body(
+                  h2(textOutput("mean_from_sign"),
+                    style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              ),
+              
+              card(
+                height = "70px",
+                padding = 0,
+                card_header("Bias"),
+                card_body(
+                  h2(textOutput("estimated_abs_bias_sign"),
+                     style = "color: #0099ff; margin: 0; font-size: 20px;"
+                  )
+                )
+              )
             )
+            
+
+            
           )
         )
       ),
       column(
         width = 4,
         wellPanel(
-          style = "height: 750px;",
+          style = "height: 760px;",
           h5("Underpowered Research Undermines Science"),
-          p("Background"),
-          p("Quick guide"),
-          p("Solution"),
-          p("Methods")
+          
+          h6("Background"),
+          p("
+          Research is constrained by competition between researchers 
+          and the need for fast publication. 
+          Consequently, researchers are incentivized to conduct studies with smaller sample sizes.
+          The claimed power (typically 80%) is often 
+          based on unrealistic assumptions and the effective power is much lower.
+          Combined with the selective publication of 'significant' results, 
+          this increases the Type M error (Magnitude error), i.e. published results overestimate 
+          the true effect.
+          "),
+          
+          h6("This app"),
+          p("With this app, you can simulate the above phenomena using simple but formal 
+            statistics and assess the severity of the problem."),
+          
+          h6("Quick guide"),
+          p("
+            Use the sliders & radio buttons to define the study and sample size.
+            Also asses parameters that give effective power below 80%.
+            In the results pane, see how estimated effect sizes and p-values are related
+            and how selective publication biases the evidence.
+            The bottom pane shows evidence under selective publication compared 
+            to 'all-studies-published'.
+            "),
+          
+          
+          h6("Conclusion"),
+          p("Well that is up to you ;-)  
+          
+          ... as a statistician, I can only say that I have seen 
+          how political and strategic reasoning forces wrong assumptions into sample size calculations
+          leading to effective power well below the claimed 80%.")
+         
         )
       )
     )
   ),
 
 
-  # second tab
+  # second page
   tabPanel(
     "About",
     fluidRow()
   )
+)
+
 )
 
 
@@ -221,17 +345,21 @@ server <- function(input, output, session) {
 
   #--------------------------
   # Simulate one realized data set when rerun button clicked
-  df_sim_results <- eventReactive(
-    eventExpr = input$btn_rerun,
-    ignoreNULL = FALSE, # to run once before button click
-    valueExpr = {
-      combine_dfs_lin(par_a(), par_b())
-    }
+  df_sim_results <- reactive(
+    combine_dfs_lin(par_a(), par_b())
   )
 
   sim_plot <- reactive({
     render_example_dataset_plot(df = df_sim_results())
-  })
+  }) |> # do when any of below items is changed
+    bindEvent(
+      input$btn_rerun,
+      input$val_m_studies,
+      input$val_n_per_group,
+      input$val_true_effect,
+      input$val_true_sd,
+      ignoreNULL = FALSE
+    )
 
 
   #-------------------------------
@@ -317,11 +445,10 @@ server <- function(input, output, session) {
   output$meta_summary <- renderTable(
     {
       data.frame(
-        Metric = c("Std. effect size", "Calculated power", "Estimated power"),
+        Metric = c("Std. effect size", "Effective power"),
         Value = round(c(
           meta_calcul()$stand_eff_size,
-          meta_calcul()$pow_calc_pow,
-          meta_results()$effective_power
+          meta_calcul()$pow_calc_pow
         ), 2)
       )
     },
@@ -329,58 +456,23 @@ server <- function(input, output, session) {
     bordered = FALSE,
     striped = FALSE
   )
-
 
   output$true_effect_display <- renderText({
     paste("True effect size:", meta_results()$true_effect)
   })
 
-  output$true_effect_df <- renderTable(
-    {
-      data.frame(
-        Metric = c("True effect size"),
-        Value = round(c(meta_results()$true_effect), 2)
-      )
-    },
-    colnames = FALSE,
-    bordered = FALSE,
-    striped = FALSE
-  )
+  # --------
+  output$true_effect             <- renderText({sprintf("%.2f", meta_results()$true_effect)})
+  output$mean_from_sign          <- renderText({sprintf("%.2f",meta_results()$mean_from_sign)})
+  output$estimated_abs_bias_sign <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_sign)})
+  output$mean_from_all           <- renderText({sprintf("%.2f",meta_results()$mean_from_all)})
+  output$estimated_abs_bias_ns   <- renderText({sprintf("%.2f",meta_results()$estimated_abs_bias_ns)})
+  
+
+ 
 
 
-  output$meta_from_signif <- renderTable(
-    {
-      data.frame(
-        Metric = c("Mean effect size", "Absolute bias", "Relative bias"),
-        Value = round(c(
-          meta_results()$mean_from_sign,
-          meta_results()$estimated_abs_bias_sign,
-          meta_results()$estimated_rel_bias_sign
-        ), 2)
-      )
-    },
-    colnames = FALSE,
-    bordered = FALSE,
-    striped = FALSE
-  )
-
-
-  output$meta_from_nonsig <- renderTable(
-    {
-      data.frame(
-        Metric = c("Mean effect size", "Absolute bias", "Relative bias"),
-        Value = round(c(
-          meta_results()$mean_from_all,
-          meta_results()$estimated_abs_bias_ns,
-          meta_results()$estimated_rel_bias_ns
-        ), 2)
-      )
-    },
-    colnames = FALSE,
-    bordered = FALSE,
-    striped = FALSE
-  )
-
+ 
 
   #---------------------
   # map plots to output tags
