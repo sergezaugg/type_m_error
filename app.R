@@ -254,14 +254,14 @@ ui <-  tagList(
           
           h6("Background"),
           p("
-          Modern research is constrained by competition between researchers, 
+          Research is constrained by competition between researchers 
           and the need for fast publication. 
           Consequently, researchers are incentivized to conduct studies with smaller sample sizes.
           The claimed power (typically 80%) is often 
-          based on unrealistic assumptions and the effective power can be much lower.
+          based on unrealistic assumptions and the effective power is much lower.
           Combined with the selective publication of 'significant' results, 
-          this increases the Type M error, i.e. published results overestimate 
-          the true effect size.
+          this increases the Type M error (Magnitude error), i.e. published results overestimate 
+          the true effect.
           "),
           
           h6("This app"),
@@ -270,21 +270,21 @@ ui <-  tagList(
           
           h6("Quick guide"),
           p("
-            Use the sliders and radio buttons to define the study and sample size.
-            Many studies have an effective power below 80%, so adjust the parameters accordingly.
+            Use the sliders & radio buttons to define the study and sample size.
+            Also asses parameters that give effective power below 80%.
             In the results pane, see how estimated effect sizes and p-values are related
-            and how selective publication based on p-values biases the evidence.
-            The bottom pane shows the evidence under selective publication and compares 
-            it with the results that would be obtained if all studies were published.
+            and how selective publication biases the evidence.
+            The bottom pane shows evidence under selective publication compared 
+            to 'all-studies-published'.
             "),
           
           
           h6("Conclusion"),
           p("Well that is up to you ;-)  
           
-          ... as a statistician, I can only confirm that modern research tends to boldly 
-            pipe wrong assumption into sample size calculations (for political and strategic resons) 
-            leading to effective power well below the claimed 80%.")
+          ... as a statistician, I can only say that I have seen 
+          how political and strategic reasoning forces wrong assumptions into sample size calculations
+          leading to effective power well below the claimed 80%.")
          
         )
       )
@@ -445,7 +445,7 @@ server <- function(input, output, session) {
   output$meta_summary <- renderTable(
     {
       data.frame(
-        Metric = c("Std. effect size", "Calculated power"),
+        Metric = c("Std. effect size", "Effective power"),
         Value = round(c(
           meta_calcul()$stand_eff_size,
           meta_calcul()$pow_calc_pow
