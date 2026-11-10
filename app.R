@@ -14,34 +14,16 @@ source("src/styles.R")
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
-# spacing
-add_custom_css <- function(theme) {
-  bs_add_rules(
-    theme,
-    "
-    .well {margin-bottom: 10px;}
-    .row {--bs-gutter-x: 10px;}
-    .container-fluid {padding-left: 50px; padding-right: 50px;}
-    "
-  )
-}
-
-themes <- list(
-  "Cerulean" = add_custom_css(bs_theme(version = 5, bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
-  "Zephyr" = add_custom_css(bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
-  "Flatly" = add_custom_css(bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee")),
-  "Morph"  = add_custom_css(bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee"))
-)
+# themes_li <- list(
+#   "Cerulean" = add_custom_css(bs_theme(version = 5, bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
+#   "Zephyr" = add_custom_css(bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
+#   "Flatly" = add_custom_css(bs_theme(version = 5, bootswatch = "flatly", primary = "#aabbcc", secondary = "#ccddee")),
+#   "Morph"  = add_custom_css(bs_theme(version = 5, bootswatch = "morph", primary = "#aabbcc", secondary = "#ccddee"))
+# )
 
 ui <- tagList(
-  
-  # tags$head(style_cards()),
-
   navbarPage(
-
-    #-------------------------
-    # (1) styling and formats
-
+    
     # custom formatted title
     title = tags$span(
       style = "display: inline-flex; align-items: center; gap: 10px;",
@@ -49,6 +31,12 @@ ui <- tagList(
       tags$span("Underpowered Research Undermines Science")
     ),
 
+    #-------------------------
+    # (1) styling and formats
+
+    # apply style for cards 
+    style_cards(),
+    
     # main app's theme (initial)
     theme = add_custom_css(bs_theme(version = 5,bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
 
@@ -60,30 +48,9 @@ ui <- tagList(
     "
     ),
 
-    # style_card_header(),
-    
-    style_cards(),
-    
-    # tags$style(HTML("
-    # .card-header {
-    #   padding-top: 4px;
-    #   padding-bottom: 4px;
-    #   font-size: 16px;
-    #   line-height: 1.2;
-    # }
-    # ")),
-    # 
     
     
-    # tags$style(HTML("
-    # .card-body {
-    #   padding-top: 4px;
-    #   padding-bottom: 4px;
-    #   font-size: 16px;
-    #   line-height: 1.2;
-    # }
-    # ")),
-
+  
 
     #-------------------------
     # (2) pages
@@ -318,7 +285,7 @@ ui <- tagList(
       selectInput(
         "theme",
         label = NULL,
-        choices = names(themes),
+        choices = names(themes_li),
         selected = "cerulean",
         width = "140px"
       )
@@ -330,7 +297,7 @@ ui <- tagList(
 server <- function(input, output, session) {
   
   observeEvent(input$theme, {
-    session$setCurrentTheme(themes[[input$theme]])
+    session$setCurrentTheme(themes_li[[input$theme]])
   }, ignoreInit = TRUE)
   
   #--------------------------
