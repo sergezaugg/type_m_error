@@ -12,12 +12,23 @@ source("src/utils_plots.R")
 source("src/styles.R")
 source("pages/text_for_pages.R")
 
-
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
 ui <- tagList(
   navbarPage(
+    
+    tags$head(
+      tags$style(HTML("
+    body {
+      transition: opacity 0.80s ease-in-out;
+    }
+
+    body.theme-changing {
+      opacity: 0.01;
+    }
+    "))
+    ),
     
     # custom formatted title
     title = tags$span(
@@ -249,7 +260,7 @@ ui <- tagList(
       
       nav_item(p("Theme")),
      
-    if (FALSE) { 
+    
       nav_item(
         selectInput(
           "theme",
@@ -259,7 +270,7 @@ ui <- tagList(
           width = "140px"
         )
       )
-    }
+    
     
     
   )
