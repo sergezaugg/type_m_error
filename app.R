@@ -31,7 +31,7 @@ ui <- tagList(
     style_cards(),
     
     # main app's theme (initial)
-    theme = add_custom_css(bs_theme(version = 5,bootswatch = "cerulean", primary = "#aabbcc", secondary = "#ccddee")),
+    theme = add_custom_css(bs_theme(version = 5,bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
 
     # add static text for version and © at bottom
     tags$div(
