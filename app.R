@@ -10,13 +10,13 @@ library(bslib)
 source("src/utils_sim.R")
 source("src/utils_plots.R")
 source("src/styles.R")
+source("pages/text_for_pages.R")
 
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
 ui <- tagList(
   navbarPage(
-    
     # custom formatted title
     title = tags$span(
       style = "display: inline-flex; align-items: center; gap: 10px;",
@@ -27,23 +27,19 @@ ui <- tagList(
     #-------------------------
     # (1) styling and formats
 
-    # apply style for cards 
+    # apply style for cards
     style_cards(),
-    
+
     # main app's theme (initial)
-    theme = add_custom_css(bs_theme(version = 5,bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),
+    theme = themes_li$Cerulean,
 
     # add static text for version and © at bottom
     tags$div(
-      "v0.9.1 - © 2026 Serge Zaugg",
+      "v0.9.3-β - © 2026 Serge Zaugg",
       style = "position: fixed;bottom: 8px; left: 20px;
       font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
     "
     ),
-
-    
-    
-  
 
     #-------------------------
     # (2) pages
@@ -118,10 +114,7 @@ ui <- tagList(
               column(
                 width = 5,
                 h5("Explore datasets"),
-                p("Inspect a few simulated datasets.
-                Each dataset is different due to simlated random error (SD).
-                In full simulation, multiples datasets are generated.
-                ")
+                p(ptext$info_expl_datasets_tx)
               ),
               column(
                 width = 7,
@@ -227,36 +220,15 @@ ui <- tagList(
           width = 4,
           wellPanel(
             style = "height: 760px;",
-            h5("Underpowered Research Undermines Science"),
-            h6("Background"),
-            p("
-            Research is constrained by competition between researchers
-            and the need for fast publication.
-            Consequently, researchers are incentivized to conduct studies with smaller sample sizes.
-            The claimed power (typically 80%) is often
-            based on unrealistic assumptions and the effective power is much lower.
-            Combined with the selective publication of 'significant' results,
-            this increases the Type M error (Magnitude error), i.e. published results overestimate
-            the true effect.
-            "),
-            h6("This app"),
-            p("With this app, you can simulate the above phenomena using simple but formal
-            statistics and assess the severity of the problem."),
-            h6("Quick guide"),
-            p("
-            Use the sliders & radio buttons to define the study and sample size.
-            In the results pane, see how estimated effect sizes and p-values are related
-            and how selective publication biases the evidence.
-            The bottom pane shows evidence under selective publication compared
-            to 'all-studies-published'.
-            "),
-            h6("Hint from author"),
-            p("Based on my real-world experience as a statistician, I suspect that
-            many studies that claim 80% power probaly have much less.
-            So with this app, try parameter values that give effective power ~50%.
-            "),
-            h6("Conclusion"),
-            p("Well that is up to you ...")
+            h5(ptext$info_mainti_ti),
+            h6(ptext$info_background_ti),
+            p(ptext$info_background_tx),
+            h6(ptext$info_thisapp_ti),
+            p(ptext$info_thisapp_tx),
+            h6(ptext$info_guide_ti),
+            p(ptext$info_guide_tx),
+            h6(ptext$info_hint_ti),
+            p(ptext$info_hint_tx)
           )
         )
       )
@@ -266,38 +238,74 @@ ui <- tagList(
     # second page
     tabPanel(
       "About",
-      fluidRow()
-    ),
-    
-    # to push all elements below to the right 
-    
-      nav_spacer(),
-      
-      nav_item(p("Theme")),
-     
-    if (FALSE) { 
-      nav_item(
-        selectInput(
-          "theme",
-          label = NULL,
-          choices = names(themes_li),
-          selected = "cerulean",
-          width = "140px"
+      fluidRow(
+        column(
+          width = 4,
+          div(
+            h5("Author"),
+            tags$p(
+              "Serge Zaugg (",
+              tags$a("LinkedIn",
+                href = "https://www.linkedin.com/in/dkifh34rtn345eb5fhrthdbgf45/",
+                target = "_blank"
+              ),
+              ", ",
+              tags$a("GitHub",
+                href = "https://github.com/sergezaugg",
+                target = "_blank"
+              ),
+              ")"
+            )
+          )
         )
       )
-    }
+    ),
     
-    
+    # second page
+    tabPanel(
+      "BETA",
+      fluidRow(
+        column(
+          width = 8,
+          div(
+            h5("This app in in BETA"),
+            p("Planned: "),
+            p("Implement effect pooling with meta-analysis methods instead of simple mean"),
+            p("Maybe: "),
+            p("Extend app to binary and count outcomes")
+           
+          )
+        )
+      )
+    ),
+
+    # to push all elements below to the right
+
+    # nav_spacer(),
+    #
+    # nav_item(p("Theme")),
+    #
+    # nav_item(
+    #   selectInput(
+    #     "theme",
+    #     label = NULL,
+    #     choices = names(themes_li),
+    #     selected = "cerulean",
+    #     width = "140px"
+    #   )
+    # )
   )
 )
 
 
 server <- function(input, output, session) {
-  
-  observeEvent(input$theme, {
-    session$setCurrentTheme(themes_li[[input$theme]])
-  }, ignoreInit = TRUE)
-  
+  observeEvent(input$theme,
+    {
+      session$setCurrentTheme(themes_li[[input$theme]])
+    },
+    ignoreInit = TRUE
+  )
+
   #--------------------------
   # wrap user input into reactive lists
   par_a <- reactive(list(
@@ -362,16 +370,7 @@ server <- function(input, output, session) {
   df_esti_all <- reactive({
     map_dfr(1:as.numeric(input$val_m_studies), function(i) {
       df_all <- combine_dfs_lin(par_a(), par_b())
-      mod01 <- lm(response ~ group, data = df_all)
-
-      tibble(
-        iter = i,
-        term = names(coef(mod01)),
-        estimate = coef(mod01),
-        conf_lo = confint(mod01)[, 1],
-        conf_up = confint(mod01)[, 2],
-        p_value = summary(mod01)$coefficients[, 4]
-      )
+      fit_and_prep_mod_summary(data = df_all, i = i)
     })
   }) |> # do the simulation when any of below items is changed
     bindEvent(
