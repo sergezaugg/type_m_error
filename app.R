@@ -6,6 +6,7 @@
 library(shiny)
 library(tidyverse)
 library(bslib)
+library(metafor)
 
 source("src/utils_sim.R")
 source("src/utils_plots.R")
@@ -160,7 +161,7 @@ ui <- tagList(
                   card_header("True effect"),
                   card_body(
                     h2(textOutput("true_effect"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                      style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 ),
@@ -168,23 +169,25 @@ ui <- tagList(
               column(
                 width = 4,
                 h6("All studies"),
+                
                 card(
                   height = "70px",
                   padding = 0,
-                  card_header("Mean effect"),
+                  card_header("Pooled effect"),
                   card_body(
-                    h2(textOutput("mean_from_all"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    h2(textOutput("poolmea_from_all"),
+                       style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 ),
+                
                 card(
                   height = "70px",
                   padding = 0,
                   card_header("Bias"),
                   card_body(
                     h2(textOutput("estimated_abs_bias_ns"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                      style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 )
@@ -192,23 +195,25 @@ ui <- tagList(
               column(
                 width = 4,
                 h6("'significant' studies"),
+
                 card(
                   height = "70px",
                   padding = 0,
-                  card_header("Mean effect"),
+                  card_header("Pooled effect"),
                   card_body(
-                    h2(textOutput("mean_from_sign"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    h2(textOutput("poolmea_from_sign"),
+                       style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 ),
+                
                 card(
                   height = "70px",
                   padding = 0,
                   card_header("Bias"),
                   card_body(
                     h2(textOutput("estimated_abs_bias_sign"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                      style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 )
@@ -402,31 +407,46 @@ server <- function(input, output, session) {
   meta_results <- reactive({
     effective_power <- sum(df_plot()$true_pos) / nrow(df_plot())
 
-    # stats from significant studies subset
-    mean_from_sign <- df_plot() %>%
-      filter(true_pos == TRUE) %>%
-      pull(estimate) %>%
-      mean()
+
+    # meta-analysis stats from significant studies subset
+    ma_res_sign <- df_plot() %>% filter(true_pos == TRUE) %>% pooled_estim_from_fixeff_ma()
+    poolmea_from_sign <- sprintf(
+      "%.2f (%.2f-%.2f)",
+      ma_res_sign$pooled_estimate,
+      ma_res_sign$ci_lower,
+      ma_res_sign$ci_upper
+    )
+    mean_from_sign <- ma_res_sign$pooled_estimate
     estimated_abs_bias_sign <- mean_from_sign - input$val_true_effect
     estimated_rel_bias_sign <- (estimated_abs_bias_sign / input$val_true_effect)
-
-    # stats from all studies
-    mean_from_all <- df_plot() %>%
-      pull(estimate) %>%
-      mean()
+    
+    # meta-analysis stats from all studies
+    ma_res_all <- df_plot() %>% pooled_estim_from_fixeff_ma()
+    poolmea_from_all <- sprintf(
+      "%.2f (%.2f-%.2f)",
+      ma_res_all$pooled_estimate,
+      ma_res_all$ci_lower,
+      ma_res_all$ci_upper
+    )
+    mean_from_all <- ma_res_all$pooled_estimate
     estimated_abs_bias_ns <- mean_from_all - input$val_true_effect
     estimated_rel_bias_ns <- (estimated_abs_bias_ns / input$val_true_effect)
 
+    
+    
+    
     # return as list
     list(
       effective_power = effective_power,
       true_effect = input$val_true_effect,
       #
       mean_from_sign = mean_from_sign,
+      poolmea_from_sign = poolmea_from_sign,
       estimated_abs_bias_sign = estimated_abs_bias_sign,
       estimated_rel_bias_sign = estimated_rel_bias_sign,
       #
       mean_from_all = mean_from_all,
+      poolmea_from_all = poolmea_from_all,
       estimated_abs_bias_ns = estimated_abs_bias_ns,
       estimated_rel_bias_ns = estimated_rel_bias_ns
     )
@@ -444,14 +464,24 @@ server <- function(input, output, session) {
   output$true_effect <- renderText({
     sprintf("%.2f", meta_results()$true_effect)
   })
+  
+  
   output$mean_from_sign <- renderText({
     sprintf("%.2f", meta_results()$mean_from_sign)
+  })
+  output$poolmea_from_sign <- renderText({
+    meta_results()$poolmea_from_sign
   })
   output$estimated_abs_bias_sign <- renderText({
     sprintf("%.2f", meta_results()$estimated_abs_bias_sign)
   })
+  
+  
   output$mean_from_all <- renderText({
     sprintf("%.2f", meta_results()$mean_from_all)
+  })
+  output$poolmea_from_all <- renderText({
+    meta_results()$poolmea_from_all
   })
   output$estimated_abs_bias_ns <- renderText({
     sprintf("%.2f", meta_results()$estimated_abs_bias_ns)

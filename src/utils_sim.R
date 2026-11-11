@@ -32,11 +32,31 @@ fit_and_prep_mod_summary <- function(data, i){
     iter = i,
     term = names(coef(mod01)),
     estimate = coef(mod01),
+    se_value = summary(mod01)$coefficients[, 2], # NEW !
     conf_lo = confint(mod01)[, 1],
     conf_up = confint(mod01)[, 2],
     p_value = summary(mod01)$coefficients[, 4]
   )  
 }
+
+
+pooled_estim_from_fixeff_ma <- function(df){
+  # fixed effects meta analysis 
+  ma_mod <- rma(
+    yi = estimate,
+    sei = se_value,
+    data = df,
+    method = "FE"
+  )
+  # return 
+  list(
+    pooled_estimate = as.numeric(coef(ma_mod)),
+    ci_lower = ma_mod$ci.lb,
+    ci_upper = ma_mod$ci.ub
+  )
+}
+
+
 
 
 
