@@ -297,15 +297,6 @@ ui <- tagList(
     nav_item(p("Theme")),
     nav_item(input_dark_mode(id = "mode", mode = "light")), 
 
-    # nav_item(
-    #   selectInput(
-    #     "theme",
-    #     label = NULL,
-    #     choices = names(themes_li),
-    #     selected = "cerulean",
-    #     width = "140px"
-    #   )
-    # )
   )
 )
 
@@ -365,33 +356,12 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(
       input$btn_rerun,
-      input$val_m_studies,
+      # input$val_m_studies,
       input$val_n_per_group,
       input$val_true_effect,
       input$val_true_sd,
       ignoreNULL = FALSE
     )
-  
-  # 2. Render the plot directly so thematic_get_option("fg") reads the live CSS color
-  output$sim_plot <- renderPlot({
-    render_example_dataset_plot(df = df_sim_results())
-  })
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   #-------------------------------
   # perform the full simulation (Simulate multiple times)
@@ -410,8 +380,6 @@ server <- function(input, output, session) {
       ignoreNULL = FALSE
     )
 
-
-  
   # Filter and derive from simulation results
   df_plot <- reactive(
     df_esti_all() %>%
@@ -420,12 +388,6 @@ server <- function(input, output, session) {
         true_pos = p_value <= as.numeric(input$val_alpha) & estimate > 0
       )
   )
-
-  # Prepare main plot: p-value vs estimate
-  resu_plot <- reactive({
-    render_sim_result_plot(df = df_plot(), input = input)
-  })
-
 
   # Prepare summary stats from sum results
   meta_results <- reactive({
@@ -514,25 +476,15 @@ server <- function(input, output, session) {
   #---------------------
   # map plots to output tags
 
-  # output$sim_plot <- renderPlot({
-  #   
-  #   sim_plot()
-  #   
-  #   # # 1. Read the current mode from input_dark_mode(id = "mode")
-  #   # frame_color <- if (isTRUE(input$mode == "dark")) "white" else "black"
-  #   # 
-  #   # # 2. Add the border dynamically whenever mode or sim_plot() updates
-  #   # sim_plot() +
-  #   #   theme(
-  #   #     panel.border = element_rect(fill = NA, color = frame_color, linewidth = 0.8)
-  #   #   )
-  #   
-  #   
-  # })
-
-  output$resu_plot <- renderPlot({
-    resu_plot()
+  # 2. Render the plot directly so thematic_get_option("fg") reads the live CSS color
+  output$sim_plot <- renderPlot({
+    render_example_dataset_plot(df = df_sim_results())
   })
+  
+  output$resu_plot <- renderPlot({
+    render_sim_result_plot(df = df_plot(), input = input)
+  })
+  
 }
 
 
