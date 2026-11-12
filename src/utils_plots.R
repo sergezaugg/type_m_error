@@ -3,8 +3,6 @@
 # Author : Serge Zaugg
 # ---------------------------
 
-
-
 render_example_dataset_plot <- function(df) {
   
   fg <- thematic_get_option("fg")
@@ -17,6 +15,7 @@ render_example_dataset_plot <- function(df) {
     ) +
     theme_minimal() +
     theme(
+      plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
       plot.background = element_rect(fill = "transparent", color = NA),
       panel.background = element_rect(fill = "transparent", color = NA),
       panel.grid = element_blank(),
@@ -37,6 +36,8 @@ render_sim_result_plot <- function(df, input) {
   ggplot(df) +
     geom_point(aes(x = estimate, y = p_value, color = true_pos)) +
     scale_y_continuous(limits = c(0, 1)) +
+    scale_color_manual(values = c("TRUE"  = "#0088ff","FALSE" = "#ff5500")
+    ) + 
     geom_hline(
       yintercept = as.numeric(input$val_alpha),
       linetype = "dotted",
@@ -71,6 +72,7 @@ render_sim_result_plot <- function(df, input) {
     # theme_classic() 
     theme_minimal() +
       theme(
+        plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
         plot.background = element_rect(fill = "transparent", color = NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid = element_blank(),
@@ -88,36 +90,3 @@ render_sim_result_plot <- function(df, input) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# theme(
-#   plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
-#   panel.border = element_rect(
-#     color = "black",
-#     fill = NA,
-#     linewidth = 0.8
-#   )
-# )
-
-# theme(
-#   plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
-#   panel.border = element_rect(
-#     color = "black",
-#     fill = NA,
-#     linewidth = 0.8
-#   ),
-#   legend.position = "none"
-# )

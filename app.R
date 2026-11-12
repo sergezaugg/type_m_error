@@ -20,12 +20,9 @@ addResourcePath("resources", "resources")
 # Automatically style R plots to match bslib / Shiny themes
 thematic_shiny()
 
-
 ui <- tagList(
   navbarPage(
 
-
-    
     # custom formatted title
     title = tags$span(
       style = "display: inline-flex; align-items: center; gap: 10px;",
@@ -49,13 +46,13 @@ ui <- tagList(
       font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
     "
     ),
-
+    
     #-------------------------
     # (2) pages
 
     # first page
     tabPanel(
-      "Full Sim",
+      "Simulate",
       fluidRow(
         column(
           width = 4,
@@ -123,6 +120,7 @@ ui <- tagList(
               column(
                 width = 5,
                 h5("Explore datasets"),
+                div(style = "height: 25px;"),
                 p(ptext$info_expl_datasets_tx)
               ),
               column(
@@ -269,7 +267,10 @@ ui <- tagList(
               ),
               ")"
             )
-          )
+          ),
+          h5("Metods"),
+          p("'Effect' represents the true or estimated difference in mean values between groups A and B."),
+          p("Pooled effect and 95%-CIs obtained from simple fixed-effect meta-analysis"),
         )
       )
     ),
@@ -281,12 +282,9 @@ ui <- tagList(
         column(
           width = 8,
           div(
-            h5("This app in in BETA"),
-            p("Planned: "),
-            p("Implement effect pooling with meta-analysis methods instead of simple mean"),
-            p("Maybe: "),
-            p("Extend app to binary and count outcomes")
-           
+            h5("This app is in BETA stage"),
+            # p("Maybe: "),
+            # p("Extend app to binary and count outcomes")
           )
         )
       )
@@ -393,19 +391,25 @@ server <- function(input, output, session) {
   meta_results <- reactive({
     effective_power <- sum(df_plot()$true_pos) / nrow(df_plot())
 
-
     # meta-analysis stats from significant studies subset
-    ma_res_sign <- df_plot() %>% filter(true_pos == TRUE) %>% pooled_estim_from_fixeff_ma()
-    poolmea_from_sign <- sprintf(
-      "%.2f (%.2f-%.2f)",
-      ma_res_sign$pooled_estimate,
-      ma_res_sign$ci_lower,
-      ma_res_sign$ci_upper
-    )
-    mean_from_sign <- ma_res_sign$pooled_estimate
-    estimated_abs_bias_sign <- mean_from_sign - input$val_true_effect
-    estimated_rel_bias_sign <- (estimated_abs_bias_sign / input$val_true_effect)
-    
+    if (df_plot()$true_pos %>% sum() > 0){ # spec: capture if not any study was significant  
+      ma_res_sign <- df_plot() %>% filter(true_pos == TRUE) %>% pooled_estim_from_fixeff_ma()
+      poolmea_from_sign <- sprintf(
+        "%.2f (%.2f-%.2f)",
+        ma_res_sign$pooled_estimate,
+        ma_res_sign$ci_lower,
+        ma_res_sign$ci_upper
+      )
+      mean_from_sign <- ma_res_sign$pooled_estimate
+      estimated_abs_bias_sign <- mean_from_sign - input$val_true_effect
+      estimated_rel_bias_sign <- (estimated_abs_bias_sign / input$val_true_effect)
+    } else {
+      poolmea_from_sign <- "Not applicable"
+      mean_from_sign <- NA
+      estimated_abs_bias_sign <- NA
+      estimated_rel_bias_sign <- NA
+    }
+      
     # meta-analysis stats from all studies
     ma_res_all <- df_plot() %>% pooled_estim_from_fixeff_ma()
     poolmea_from_all <- sprintf(
@@ -418,9 +422,6 @@ server <- function(input, output, session) {
     estimated_abs_bias_ns <- mean_from_all - input$val_true_effect
     estimated_rel_bias_ns <- (estimated_abs_bias_ns / input$val_true_effect)
 
-    
-    
-    
     # return as list
     list(
       effective_power = effective_power,
@@ -476,7 +477,7 @@ server <- function(input, output, session) {
   #---------------------
   # map plots to output tags
 
-  # 2. Render the plot directly so thematic_get_option("fg") reads the live CSS color
+  # Render the plot directly so thematic_get_option("fg") reads the live CSS color
   output$sim_plot <- renderPlot({
     render_example_dataset_plot(df = df_sim_results())
   })
