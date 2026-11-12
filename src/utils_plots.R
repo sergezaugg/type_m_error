@@ -3,24 +3,62 @@
 # Author : Serge Zaugg
 # ---------------------------
 
+# theme(
+#   plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
+#   panel.border = element_rect(
+#     color = "black",
+#     fill = NA,
+#     linewidth = 0.8
+#   )
+# )
+
+# theme(
+#   plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
+#   panel.border = element_rect(
+#     color = "black",
+#     fill = NA,
+#     linewidth = 0.8
+#   ),
+#   legend.position = "none"
+# )
 
 render_example_dataset_plot <- function(df) {
+  fg <- thematic_get_option("fg")
+  
   ggplot(df) +
     geom_jitter(
       aes(x = group, y = response, color = group),
       width = 0.15,
       height = 0
     ) +
-    theme_classic() +
+    theme_minimal() +
     theme(
-      plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
-      panel.border = element_rect(
-        color = "black",
-        fill = NA,
-        linewidth = 0.8
-      )
+      plot.background = element_rect(fill = "transparent", color = NA),
+      panel.background = element_rect(fill = "transparent", color = NA),
+      panel.grid = element_blank(),
+      panel.border = element_rect(fill = NA, color = fg, linewidth = 0.8),
+      axis.ticks = element_line(color = fg),
+      axis.text = element_text(color = fg),
+      axis.title = element_text(color = fg),
+      text = element_text(color = fg)
     )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 render_sim_result_plot <- function(df, input) {
@@ -61,14 +99,6 @@ render_sim_result_plot <- function(df, input) {
       # color = "green",
       size = 5
     ) +
-    theme_classic() +
-    theme(
-      plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
-      panel.border = element_rect(
-        color = "black",
-        fill = NA,
-        linewidth = 0.8
-      ),
-      legend.position = "none"
-    )
+    theme_classic() 
+
 }

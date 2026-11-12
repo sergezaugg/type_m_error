@@ -7,6 +7,7 @@ library(shiny)
 library(tidyverse)
 library(bslib)
 library(metafor)
+library(thematic)
 
 source("src/utils_sim.R")
 source("src/utils_plots.R")
@@ -16,8 +17,15 @@ source("pages/text_for_pages.R")
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
+# Automatically style R plots to match bslib / Shiny themes
+thematic_shiny()
+
+
 ui <- tagList(
   navbarPage(
+
+
+    
     # custom formatted title
     title = tags$span(
       style = "display: inline-flex; align-items: center; gap: 10px;",
@@ -285,11 +293,10 @@ ui <- tagList(
     ),
 
     # to push all elements below to the right
+    nav_spacer(),
+    nav_item(p("Theme")),
+    nav_item(input_dark_mode(id = "mode", mode = "light")), 
 
-    # nav_spacer(),
-    #
-    # nav_item(p("Theme")),
-    #
     # nav_item(
     #   selectInput(
     #     "theme",
@@ -353,13 +360,9 @@ server <- function(input, output, session) {
 
   #--------------------------
   # Simulate one realized data set when rerun button clicked
-  df_sim_results <- reactive(
+  df_sim_results <- reactive({
     combine_dfs_lin(par_a(), par_b())
-  )
-
-  sim_plot <- reactive({
-    render_example_dataset_plot(df = df_sim_results())
-  }) |> # do when any of below items is changed
+  }) |>
     bindEvent(
       input$btn_rerun,
       input$val_m_studies,
@@ -368,8 +371,28 @@ server <- function(input, output, session) {
       input$val_true_sd,
       ignoreNULL = FALSE
     )
-
-
+  
+  # 2. Render the plot directly so thematic_get_option("fg") reads the live CSS color
+  output$sim_plot <- renderPlot({
+    render_example_dataset_plot(df = df_sim_results())
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #-------------------------------
   # perform the full simulation (Simulate multiple times)
   df_esti_all <- reactive({
@@ -388,6 +411,7 @@ server <- function(input, output, session) {
     )
 
 
+  
   # Filter and derive from simulation results
   df_plot <- reactive(
     df_esti_all() %>%
@@ -490,9 +514,21 @@ server <- function(input, output, session) {
   #---------------------
   # map plots to output tags
 
-  output$sim_plot <- renderPlot({
-    sim_plot()
-  })
+  # output$sim_plot <- renderPlot({
+  #   
+  #   sim_plot()
+  #   
+  #   # # 1. Read the current mode from input_dark_mode(id = "mode")
+  #   # frame_color <- if (isTRUE(input$mode == "dark")) "white" else "black"
+  #   # 
+  #   # # 2. Add the border dynamically whenever mode or sim_plot() updates
+  #   # sim_plot() +
+  #   #   theme(
+  #   #     panel.border = element_rect(fill = NA, color = frame_color, linewidth = 0.8)
+  #   #   )
+  #   
+  #   
+  # })
 
   output$resu_plot <- renderPlot({
     resu_plot()
