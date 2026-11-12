@@ -57,11 +57,19 @@ df_esti_all <- map_dfr(1:val_m_studies, function(i) {
     iter = i,
     term = names(coef(mod01)),
     estimate = coef(mod01),
+    se_value = summary(mod01)$coefficients[, 2], # NEW !
     conf_lo = confint(mod01)[,1],
     conf_up = confint(mod01)[,2],
     p_value = summary(mod01)$coefficients[, 4]
   )
 })
+
+# 
+# mod01 <- lm(response ~ group, data = df_all)
+# summary(mod01)
+# summary(mod01)$coefficients[, 2]
+
+
 
 #-------------------------------
 # (server) derive values fro sim results 
@@ -88,6 +96,76 @@ ggplot(df_plot) +
 print(val_true_effect)
 print(meta_mean_from_detected)
 print(effective_power)
+
+
+
+
+
+#-------------------------------
+# (NEW) use meta-analytic methods
+
+ggplot(df_plot) +
+  geom_point(aes(x = estimate, y = se_value , color = true_pos)) +
+  facet_wrap(~ term, ncol = 1, scales = "free") +
+  geom_vline(xintercept = val_true_effect, linetype = "dotted", color = "green", linewidth = 1.5)
+
+
+library(metafor)
+
+dat <- df_plot 
+
+res <- rma(
+  yi = estimate ,
+  sei = se_value,
+  data = dat,
+  method = "FE"
+)
+
+# Pooled estimate
+pooled_estimate <- as.numeric(coef(res))
+# 95% confidence interval
+ci_lower <- res$ci.lb
+ci_upper <- res$ci.ub
+
+
+pooled_estim_from_fixeff_ma <- function(df){
+  # fixed effects meta analysis 
+  ma_mod <- rma(
+    yi = estimate,
+    sei = se_value,
+    data = df,
+    method = "FE"
+  )
+  # return 
+  list(
+    pooled_estimate = as.numeric(coef(ma_mod)),
+    ci_lower = ma_mod$ci.lb,
+    ci_upper = ma_mod$ci.ub
+  )
+}
+
+ma_res <- dat %>%
+  filter(true_pos == TRUE) %>% 
+  pooled_estim_from_fixeff_ma()
+
+sprintf(
+  "%.2f (%.2f to %.2f)",
+  ma_res$pooled_estimate,
+  ma_res$ci_lower,
+  ma_res$ci_upper
+)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

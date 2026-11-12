@@ -6,6 +6,8 @@
 library(shiny)
 library(tidyverse)
 library(bslib)
+library(metafor)
+library(thematic)
 
 source("src/utils_sim.R")
 source("src/utils_plots.R")
@@ -15,8 +17,12 @@ source("pages/text_for_pages.R")
 # Tell shiny where to find resources
 addResourcePath("resources", "resources")
 
+# Automatically style R plots to match bslib / Shiny themes
+thematic_shiny()
+
 ui <- tagList(
   navbarPage(
+
     # custom formatted title
     title = tags$span(
       style = "display: inline-flex; align-items: center; gap: 10px;",
@@ -35,18 +41,18 @@ ui <- tagList(
 
     # add static text for version and © at bottom
     tags$div(
-      "v0.9.3-β - © 2026 Serge Zaugg",
+      "v0.9.4-β - © 2026 Serge Zaugg",
       style = "position: fixed;bottom: 8px; left: 20px;
       font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
     "
     ),
-
+    
     #-------------------------
     # (2) pages
 
     # first page
     tabPanel(
-      "Full Sim",
+      "Simulate",
       fluidRow(
         column(
           width = 4,
@@ -114,6 +120,7 @@ ui <- tagList(
               column(
                 width = 5,
                 h5("Explore datasets"),
+                div(style = "height: 25px;"),
                 p(ptext$info_expl_datasets_tx)
               ),
               column(
@@ -160,7 +167,7 @@ ui <- tagList(
                   card_header("True effect"),
                   card_body(
                     h2(textOutput("true_effect"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                      style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 ),
@@ -168,23 +175,25 @@ ui <- tagList(
               column(
                 width = 4,
                 h6("All studies"),
+                
                 card(
                   height = "70px",
                   padding = 0,
-                  card_header("Mean effect"),
+                  card_header("Pooled effect"),
                   card_body(
-                    h2(textOutput("mean_from_all"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    h2(textOutput("poolmea_from_all"),
+                       style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 ),
+                
                 card(
                   height = "70px",
                   padding = 0,
                   card_header("Bias"),
                   card_body(
                     h2(textOutput("estimated_abs_bias_ns"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                      style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 )
@@ -192,23 +201,25 @@ ui <- tagList(
               column(
                 width = 4,
                 h6("'significant' studies"),
+
                 card(
                   height = "70px",
                   padding = 0,
-                  card_header("Mean effect"),
+                  card_header("Pooled effect"),
                   card_body(
-                    h2(textOutput("mean_from_sign"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                    h2(textOutput("poolmea_from_sign"),
+                       style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 ),
+                
                 card(
                   height = "70px",
                   padding = 0,
                   card_header("Bias"),
                   card_body(
                     h2(textOutput("estimated_abs_bias_sign"),
-                      style = "color: #0099ff; margin: 0; font-size: 20px;"
+                      style = "color: #0099ff; margin: 0; font-size: 16px;"
                     )
                   )
                 )
@@ -256,7 +267,10 @@ ui <- tagList(
               ),
               ")"
             )
-          )
+          ),
+          h5("Metods"),
+          p("'Effect' represents the true or estimated difference in mean values between groups A and B."),
+          p("Pooled effect and 95%-CIs obtained from simple fixed-effect meta-analysis"),
         )
       )
     ),
@@ -268,32 +282,19 @@ ui <- tagList(
         column(
           width = 8,
           div(
-            h5("This app in in BETA"),
-            p("Planned: "),
-            p("Implement effect pooling with meta-analysis methods instead of simple mean"),
-            p("Maybe: "),
-            p("Extend app to binary and count outcomes")
-           
+            h5("This app is in BETA stage"),
+            # p("Maybe: "),
+            # p("Extend app to binary and count outcomes")
           )
         )
       )
     ),
 
     # to push all elements below to the right
+    nav_spacer(),
+    nav_item(p("Theme")),
+    nav_item(input_dark_mode(id = "mode", mode = "light")), 
 
-    # nav_spacer(),
-    #
-    # nav_item(p("Theme")),
-    #
-    # nav_item(
-    #   selectInput(
-    #     "theme",
-    #     label = NULL,
-    #     choices = names(themes_li),
-    #     selected = "cerulean",
-    #     width = "140px"
-    #   )
-    # )
   )
 )
 
@@ -348,23 +349,18 @@ server <- function(input, output, session) {
 
   #--------------------------
   # Simulate one realized data set when rerun button clicked
-  df_sim_results <- reactive(
+  df_sim_results <- reactive({
     combine_dfs_lin(par_a(), par_b())
-  )
-
-  sim_plot <- reactive({
-    render_example_dataset_plot(df = df_sim_results())
-  }) |> # do when any of below items is changed
+  }) |>
     bindEvent(
       input$btn_rerun,
-      input$val_m_studies,
+      # input$val_m_studies,
       input$val_n_per_group,
       input$val_true_effect,
       input$val_true_sd,
       ignoreNULL = FALSE
     )
-
-
+  
   #-------------------------------
   # perform the full simulation (Simulate multiple times)
   df_esti_all <- reactive({
@@ -382,7 +378,6 @@ server <- function(input, output, session) {
       ignoreNULL = FALSE
     )
 
-
   # Filter and derive from simulation results
   df_plot <- reactive(
     df_esti_all() %>%
@@ -392,28 +387,38 @@ server <- function(input, output, session) {
       )
   )
 
-  # Prepare main plot: p-value vs estimate
-  resu_plot <- reactive({
-    render_sim_result_plot(df = df_plot(), input = input)
-  })
-
-
   # Prepare summary stats from sum results
   meta_results <- reactive({
     effective_power <- sum(df_plot()$true_pos) / nrow(df_plot())
 
-    # stats from significant studies subset
-    mean_from_sign <- df_plot() %>%
-      filter(true_pos == TRUE) %>%
-      pull(estimate) %>%
-      mean()
-    estimated_abs_bias_sign <- mean_from_sign - input$val_true_effect
-    estimated_rel_bias_sign <- (estimated_abs_bias_sign / input$val_true_effect)
-
-    # stats from all studies
-    mean_from_all <- df_plot() %>%
-      pull(estimate) %>%
-      mean()
+    # meta-analysis stats from significant studies subset
+    if (df_plot()$true_pos %>% sum() > 0){ # spec: capture if not any study was significant  
+      ma_res_sign <- df_plot() %>% filter(true_pos == TRUE) %>% pooled_estim_from_fixeff_ma()
+      poolmea_from_sign <- sprintf(
+        "%.2f (%.2f-%.2f)",
+        ma_res_sign$pooled_estimate,
+        ma_res_sign$ci_lower,
+        ma_res_sign$ci_upper
+      )
+      mean_from_sign <- ma_res_sign$pooled_estimate
+      estimated_abs_bias_sign <- mean_from_sign - input$val_true_effect
+      estimated_rel_bias_sign <- (estimated_abs_bias_sign / input$val_true_effect)
+    } else {
+      poolmea_from_sign <- "Not applicable"
+      mean_from_sign <- NA
+      estimated_abs_bias_sign <- NA
+      estimated_rel_bias_sign <- NA
+    }
+      
+    # meta-analysis stats from all studies
+    ma_res_all <- df_plot() %>% pooled_estim_from_fixeff_ma()
+    poolmea_from_all <- sprintf(
+      "%.2f (%.2f-%.2f)",
+      ma_res_all$pooled_estimate,
+      ma_res_all$ci_lower,
+      ma_res_all$ci_upper
+    )
+    mean_from_all <- ma_res_all$pooled_estimate
     estimated_abs_bias_ns <- mean_from_all - input$val_true_effect
     estimated_rel_bias_ns <- (estimated_abs_bias_ns / input$val_true_effect)
 
@@ -423,10 +428,12 @@ server <- function(input, output, session) {
       true_effect = input$val_true_effect,
       #
       mean_from_sign = mean_from_sign,
+      poolmea_from_sign = poolmea_from_sign,
       estimated_abs_bias_sign = estimated_abs_bias_sign,
       estimated_rel_bias_sign = estimated_rel_bias_sign,
       #
       mean_from_all = mean_from_all,
+      poolmea_from_all = poolmea_from_all,
       estimated_abs_bias_ns = estimated_abs_bias_ns,
       estimated_rel_bias_ns = estimated_rel_bias_ns
     )
@@ -444,14 +451,24 @@ server <- function(input, output, session) {
   output$true_effect <- renderText({
     sprintf("%.2f", meta_results()$true_effect)
   })
+  
+  
   output$mean_from_sign <- renderText({
     sprintf("%.2f", meta_results()$mean_from_sign)
+  })
+  output$poolmea_from_sign <- renderText({
+    meta_results()$poolmea_from_sign
   })
   output$estimated_abs_bias_sign <- renderText({
     sprintf("%.2f", meta_results()$estimated_abs_bias_sign)
   })
+  
+  
   output$mean_from_all <- renderText({
     sprintf("%.2f", meta_results()$mean_from_all)
+  })
+  output$poolmea_from_all <- renderText({
+    meta_results()$poolmea_from_all
   })
   output$estimated_abs_bias_ns <- renderText({
     sprintf("%.2f", meta_results()$estimated_abs_bias_ns)
@@ -460,13 +477,15 @@ server <- function(input, output, session) {
   #---------------------
   # map plots to output tags
 
+  # Render the plot directly so thematic_get_option("fg") reads the live CSS color
   output$sim_plot <- renderPlot({
-    sim_plot()
+    render_example_dataset_plot(df = df_sim_results())
   })
-
+  
   output$resu_plot <- renderPlot({
-    resu_plot()
+    render_sim_result_plot(df = df_plot(), input = input)
   })
+  
 }
 
 
