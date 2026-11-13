@@ -21,26 +21,17 @@ addResourcePath("resources", "resources")
 thematic_shiny()
 
 ui <- tagList(
-  
   # get CSS styles 
   includeCSS("resources/styles.css"),
+  # custom footer note 
+  app_custom_footer(text = "v0.9.4-β - © 2026 Serge Zaugg"),
   
   navbarPage(
-
-    #-------------------------
-    # (1) styling and formats
-   
-    # main app's theme (initial)
-    theme = themes_li$Cerulean,
     # custom formatted title
     title = app_custom_title(text = "Underpowered Research Undermines Science"),
-    # custom footer note 
-    app_custom_footer(text = "v0.9.4-β - © 2026 Serge Zaugg"),
-    
-    
-    
-    
-    
+    # main app's theme (initial)
+    theme = themes_li$Cerulean,
+
     #-------------------------
     # (2) pages
 
