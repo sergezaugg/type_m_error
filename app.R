@@ -21,31 +21,25 @@ addResourcePath("resources", "resources")
 thematic_shiny()
 
 ui <- tagList(
+  
+  # get CSS styles 
+  includeCSS("resources/styles.css"),
+  
   navbarPage(
-
-    # custom formatted title
-    title = tags$span(
-      style = "display: inline-flex; align-items: center; gap: 10px;",
-      tags$img(src = "resources/z_logo_blue.png", height = "30px"),
-      tags$span("Underpowered Research Undermines Science")
-    ),
 
     #-------------------------
     # (1) styling and formats
-
-    # apply style for cards
-    style_cards(),
-
+   
     # main app's theme (initial)
     theme = themes_li$Cerulean,
-
-    # add static text for version and © at bottom
-    tags$div(
-      "v0.9.4-β - © 2026 Serge Zaugg",
-      style = "position: fixed;bottom: 8px; left: 20px;
-      font-size: 14px; color: #888888; opacity: 1.0; z-index: 9999;
-    "
-    ),
+    # custom formatted title
+    title = app_custom_title(text = "Underpowered Research Undermines Science"),
+    # custom footer note 
+    app_custom_footer(text = "v0.9.4-β - © 2026 Serge Zaugg"),
+    
+    
+    
+    
     
     #-------------------------
     # (2) pages
