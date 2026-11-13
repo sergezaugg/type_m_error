@@ -71,7 +71,7 @@ ui <- tagList(
                   # width = "100px"
                   inline = TRUE
                 ),
-                radioButtons("val_m_studies", "N studies to simulate",
+                radioButtons("val_m_studies", "M studies to simulate",
                   choices = c(10, 50, 100), selected = 100,
                   # width = "100px"
                   inline = TRUE
@@ -236,7 +236,7 @@ ui <- tagList(
       "About",
       fluidRow(
         column(
-          width = 4,
+          width = 8,
           div(
             h5("Author"),
             tags$p(
@@ -253,27 +253,13 @@ ui <- tagList(
               ")"
             )
           ),
-          h5("Metods"),
-          p("'Effect' represents the true or estimated difference in mean values between groups A and B."),
-          p("Pooled effect and 95%-CIs obtained from simple fixed-effect meta-analysis"),
+          h5("Methods"),
+          ptext$methods_tx
         )
       )
     ),
     
-    # second page
-    tabPanel(
-      "BETA",
-      fluidRow(
-        column(
-          width = 8,
-          div(
-            h5("This app is in BETA stage"),
-            # p("Maybe: "),
-            # p("Extend app to binary and count outcomes")
-          )
-        )
-      )
-    ),
+  
 
     # to push all elements below to the right
     nav_spacer(),
