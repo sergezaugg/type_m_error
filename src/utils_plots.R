@@ -35,8 +35,8 @@ render_sim_result_plot <- function(df, input) {
   
   ggplot(df) +
     geom_point(aes(x = estimate, y = p_value, color = true_pos)) +
-    scale_y_continuous(limits = c(0, 1)) +
-    scale_color_manual(values = c("TRUE"  = "#0088ff","FALSE" = "#ff5500")
+      scale_y_continuous(limits = c(0, 1)) +
+      scale_color_manual(values = c("TRUE"  = "#0088ff","FALSE" = "#ff5500")
     ) + 
     geom_hline(
       yintercept = as.numeric(input$val_alpha),
@@ -69,20 +69,19 @@ render_sim_result_plot <- function(df, input) {
       vjust = 1.5,
       size = 5
     ) +
-    # theme_classic() 
     theme_minimal() +
-      theme(
-        plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        panel.background = element_rect(fill = "transparent", color = NA),
-        panel.grid = element_blank(),
-        panel.border = element_rect(fill = NA, color = fg, linewidth = 0.8),
-        axis.ticks = element_line(color = fg),
-        axis.text = element_text(color = fg, size = 11),
-        axis.title = element_text(color = fg),
-        text = element_text(color = fg),
-        legend.position = "none"
-      )
+    theme(
+      plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
+      plot.background = element_rect(fill = "transparent", color = NA),
+      panel.background = element_rect(fill = "transparent", color = NA),
+      panel.grid = element_blank(),
+      panel.border = element_rect(fill = NA, color = fg, linewidth = 0.8),
+      axis.ticks = element_line(color = fg),
+      axis.text = element_text(color = fg, size = 11),
+      axis.title = element_text(color = fg),
+      text = element_text(color = fg),
+      legend.position = "none"
+    )
 
 }
 

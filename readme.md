@@ -2,13 +2,11 @@
 
 ### Features
 This Shiny web-app offers an interactive exploration of why underpowered studies are problematic.
-the bias induced by selective publishing of 'significant' underpowered studies is sometimes called the "Type-M error"
+The bias induced by selective publishing of 'significant' underpowered studies is sometimes called the "Type-M error"
 
 ### Dependencies
 - R 4.5.1
-- tidyverse
-- shiny
-- bslib
+- tidyverse · shiny · bslib · metafor · thematic
 
 ### Data Source
 - Simulated data, no external data needed.
@@ -23,20 +21,13 @@ the bias induced by selective publishing of 'significant' underpowered studies i
   * Install packages from renv.lock: ```renv::restore()```
 
 ### Usage - Start app (with R-studio)
-Open repo in Rstudio as a project (e.g. double-click ```type_m_error.Rproj```)
-
-Easiest is to open app.R and then use the "Run app" button
-
-For more control, use Rstudio's terminal and do
-
+Open repo in Rstudio as a project (e.g. double-click ```type_m_error.Rproj```)  
+Easiest is to open app.R and then use the "Run app" button  
+For more control, use Rstudio's terminal and do  
 ```bash
-Rscript --no-init-file -e "shiny::runApp(launch.browser = TRUE)"
-# or 
 Rscript --vanilla -e "shiny::runApp(launch.browser = TRUE)"
 ```
-
-More arguments can be provided, e.g.:
-
+More arguments can be provided, e.g.:  
 ```bash
 Rscript --vanilla -e "shiny::runApp(launch.browser = TRUE, port = 3838, host = '127.0.0.1')"
 ```
@@ -67,18 +58,31 @@ Call Rscript with repo path as argument to runApp(), below replace ... by your p
 ### Project Structure
 
 ```text
-coming soon ...
+type_m_error/
+│
+├── app.R                    # Main application entry point
+├── src/                     # Shared functions, shiny ui and server components 
+├── contents/                # Static items: text, pics, codebooks etc.
+├── styles/                  # Style definitions, mostly CSS
+│
+├── renv/                    # Project-specific package environment
+├── renv.lock                # Package versions and dependency snapshot
+├── .Rprofile                # R startup config (used for renv activation)
+│
+├── sandbox/                 # misc temp code used for dev (not called by app)
+├── .gitignore               # Files excluded from version control
+├── didactic_stats_app.Rproj # RStudio project configuration
+├── readme.md
+└── LICENSE
 ```
 
-
 ### Credits
-- Web-app concept, analytics and implementation by Serge Zaugg ([Pollito-ML](https://github.com/sergezaugg))
+Web-app concept, analytics and implementation by Serge Zaugg ([Pollito-ML](https://github.com/sergezaugg))
 
 ### License
 [MIT License - © 2026 Serge Zaugg](LICENSE)
 
-### Preview
-![Description](resources/app_screenshot.png)
+
 
 
 

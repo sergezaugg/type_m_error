@@ -1,0 +1,55 @@
+/* =====================================================
+   CSS styles 
+   ===================================================== */
+
+/* Main container */
+.container-fluid {
+  margin-top: 0;
+  margin-bottom: 5px;
+  min-width: 1550px;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Spacing of panels, wells and columns */
+.well {
+  margin-bottom: 10px;
+}
+
+.row {
+  --bs-gutter-x: 10px;
+}
+
+.app-footer {
+  position: fixed;
+  bottom: 8px;
+  left: 20px;
+  font-size: 14px;
+  color: #888888;
+  z-index: 9999;
+}
+
+/* Custom style for compact cards */
+.card-header,
+.card-body {
+  display: flex;
+  align-items: center;     /* Vertical centering */
+  justify-content: center; /* Horizontal centering */
+  padding-top: 3px;
+  padding-bottom: 3px;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+
+
+
+
+
+
+
+
