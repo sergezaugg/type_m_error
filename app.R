@@ -12,20 +12,22 @@ library(thematic)
 source("src/utils_sim.R")
 source("src/utils_plots.R")
 source("src/utils_styles.R")
-source("pages/text_for_pages.R")
+
 source("src/ui_page01.R")
 source("src/ui_page02.R")
 source("src/server_page01.R")
 
-# Tell shiny where to find resources
-addResourcePath("resources", "resources")
+source("contents/text_for_pages.R")
+
+# Tell shiny where to find contents
+addResourcePath("contents", "contents")
 
 # Automatically style R plots to match bslib / Shiny themes
 thematic_shiny()
 
 ui <- tagList(
   # get CSS styles 
-  includeCSS("resources/styles.css"),
+  includeCSS("styles/styles.css"),
   # custom footer note 
   app_custom_footer(text = "v0.9.4-β - © 2026 Serge Zaugg"),
   navbarPage(

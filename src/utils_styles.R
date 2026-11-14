@@ -13,7 +13,7 @@ app_custom_footer <- function(text) {
 app_custom_title <- function(text){
   tags$span(
     style = "display: inline-flex; align-items: center; gap: 10px;",
-    tags$img(src = "resources/z_logo_blue.png", height = "30px"),
+    tags$img(src = "contents/z_logo_blue.png", height = "30px"),
     tags$span(text)
   )
 }

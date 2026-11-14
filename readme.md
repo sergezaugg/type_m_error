@@ -67,9 +67,23 @@ Call Rscript with repo path as argument to runApp(), below replace ... by your p
 ### Project Structure
 
 ```text
-coming soon ...
+didactic_stats_app/
+│
+├── app.R                    # Main application entry point
+├── src/                     # Shared functions, shiny ui and server components 
+├── contents/                # Static items: text, pics, codebooks etc.
+├── styles/                  # Style definitions, mostly CSS
+│
+├── renv/                    # Project-specific package environment
+├── renv.lock                # Package versions and dependency snapshot
+├── .Rprofile                # R startup config (used for renv activation)
+│
+├── sandbox/                 # misc temp code used for dev (not called by app)
+├── .gitignore               # Files excluded from version control
+├── didactic_stats_app.Rproj # RStudio project configuration
+├── readme.md
+└── LICENSE
 ```
-
 
 ### Credits
 - Web-app concept, analytics and implementation by Serge Zaugg ([Pollito-ML](https://github.com/sergezaugg))
@@ -77,8 +91,7 @@ coming soon ...
 ### License
 [MIT License - © 2026 Serge Zaugg](LICENSE)
 
-### Preview
-![Description](resources/app_screenshot.png)
+
 
 
 
