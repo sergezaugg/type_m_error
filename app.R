@@ -12,17 +12,15 @@ library(thematic)
 source("src/utils_sim.R")
 source("src/utils_plots.R")
 source("src/utils_styles.R")
-
 source("src/ui_page01.R")
 source("src/ui_page02.R")
 source("src/server_page01.R")
-
 source("contents/text_for_pages.R")
 
 # Tell shiny where to find contents
 addResourcePath("contents", "contents")
 
-# Automatically style R plots to match bslib / Shiny themes
+# enable plots to match bslib / Shiny themes
 thematic_shiny()
 
 ui <- tagList(
@@ -38,11 +36,10 @@ ui <- tagList(
     # pages
     ui_page01(),
     ui_page02(),
-    # to push all elements below to the right
+    # elements right of navbar
     nav_spacer(),
-    nav_item(p("Theme")),
+    nav_item(app_custom_theme_title("Theme")),
     nav_item(input_dark_mode(id = "mode", mode = "light")), 
-
   )
 )
 

@@ -18,6 +18,13 @@ app_custom_title <- function(text){
   )
 }
 
+app_custom_theme_title <- function(text){
+    tags$span(
+      style = "display: inline-flex; align-items: center; gap: 10px;",
+      tags$span(text)
+    )
+}
+
 themes_li <- list(
   "Cerulean" = (bs_theme(version = 5, bootswatch = "cerulean", primary = "#aabbcc", secondary = "#aabbcc")),
   "Zephyr" = (bs_theme(version = 5, bootswatch = "zephyr", primary = "#aabbcc", secondary = "#ccddee")),

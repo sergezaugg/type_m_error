@@ -4,16 +4,14 @@
 # ---------------------------
 
 
-
 server_page01 <- function(input, output, session) {
- 
   observeEvent(input$theme,
-               {
-                 session$setCurrentTheme(themes_li[[input$theme]])
-               },
-               ignoreInit = TRUE
+    {
+      session$setCurrentTheme(themes_li[[input$theme]])
+    },
+    ignoreInit = TRUE
   )
-  
+
   #--------------------------
   # wrap user input into reactive lists
   par_a <- reactive(list(
@@ -22,15 +20,15 @@ server_page01 <- function(input, output, session) {
     b0 = 0,
     sd_res0 = input$val_true_sd
   ))
-  
+
   par_b <- reactive(list(
     x = 1,
     n = input$val_n_per_group,
     b0 = input$val_true_effect,
     sd_res0 = input$val_true_sd
   ))
-  
-  
+
+
   #--------------------------
   # summary stats computed directly from inputs
   meta_calcul <- reactive({
@@ -52,8 +50,8 @@ server_page01 <- function(input, output, session) {
       pow_calc_pow = pow_calc_pow
     )
   })
-  
-  
+
+
   #--------------------------
   # Simulate one realized data set when rerun button clicked
   df_sim_results <- reactive({
@@ -67,7 +65,7 @@ server_page01 <- function(input, output, session) {
       input$val_true_sd,
       ignoreNULL = FALSE
     )
-  
+
   #-------------------------------
   # perform the full simulation (Simulate multiple times)
   df_esti_all <- reactive({
@@ -84,7 +82,7 @@ server_page01 <- function(input, output, session) {
       input$val_true_sd,
       ignoreNULL = FALSE
     )
-  
+
   # Filter and derive from simulation results
   df_plot <- reactive(
     df_esti_all() %>%
@@ -93,14 +91,16 @@ server_page01 <- function(input, output, session) {
         true_pos = p_value <= as.numeric(input$val_alpha) & estimate > 0
       )
   )
-  
+
   # Prepare summary stats from sum results
   meta_results <- reactive({
     effective_power <- sum(df_plot()$true_pos) / nrow(df_plot())
-    
+
     # meta-analysis stats from significant studies subset
-    if (df_plot()$true_pos %>% sum() > 0){ # spec: capture if not any study was significant  
-      ma_res_sign <- df_plot() %>% filter(true_pos == TRUE) %>% pooled_estim_from_fixeff_ma()
+    if (df_plot()$true_pos %>% sum() > 0) { # spec: capture if not any study was significant
+      ma_res_sign <- df_plot() %>%
+        filter(true_pos == TRUE) %>%
+        pooled_estim_from_fixeff_ma()
       poolmea_from_sign <- sprintf(
         "%.2f (%.2f-%.2f)",
         ma_res_sign$pooled_estimate,
@@ -116,7 +116,7 @@ server_page01 <- function(input, output, session) {
       estimated_abs_bias_sign <- NA
       estimated_rel_bias_sign <- NA
     }
-    
+
     # meta-analysis stats from all studies
     ma_res_all <- df_plot() %>% pooled_estim_from_fixeff_ma()
     poolmea_from_all <- sprintf(
@@ -128,7 +128,7 @@ server_page01 <- function(input, output, session) {
     mean_from_all <- ma_res_all$pooled_estimate
     estimated_abs_bias_ns <- mean_from_all - input$val_true_effect
     estimated_rel_bias_ns <- (estimated_abs_bias_ns / input$val_true_effect)
-    
+
     # return as list
     list(
       effective_power = effective_power,
@@ -145,8 +145,8 @@ server_page01 <- function(input, output, session) {
       estimated_rel_bias_ns = estimated_rel_bias_ns
     )
   })
-  
-  
+
+
   #---------------------
   # map summary stats to output tags
   output$stand_eff_size <- renderText({
@@ -158,8 +158,8 @@ server_page01 <- function(input, output, session) {
   output$true_effect <- renderText({
     sprintf("%.2f", meta_results()$true_effect)
   })
-  
-  
+
+
   output$mean_from_sign <- renderText({
     sprintf("%.2f", meta_results()$mean_from_sign)
   })
@@ -169,8 +169,8 @@ server_page01 <- function(input, output, session) {
   output$estimated_abs_bias_sign <- renderText({
     sprintf("%.2f", meta_results()$estimated_abs_bias_sign)
   })
-  
-  
+
+
   output$mean_from_all <- renderText({
     sprintf("%.2f", meta_results()$mean_from_all)
   })
@@ -180,23 +180,16 @@ server_page01 <- function(input, output, session) {
   output$estimated_abs_bias_ns <- renderText({
     sprintf("%.2f", meta_results()$estimated_abs_bias_ns)
   })
-  
+
   #---------------------
   # map plots to output tags
-  
+
   # Render the plot directly so thematic_get_option("fg") reads the live CSS color
   output$sim_plot <- renderPlot({
     render_example_dataset_plot(df = df_sim_results())
   })
-  
+
   output$resu_plot <- renderPlot({
     render_sim_result_plot(df = df_plot(), input = input)
   })
-  
-  
-  
 }
-
-
-
-

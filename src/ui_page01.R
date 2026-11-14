@@ -116,7 +116,7 @@ ui_page01 <- function() {
           fluidRow(
             column(
               width = 4,
-              h6("Reference"),
+              h6("Reference", class = "text-center"),
               card(
                 height = "70px",
                 padding = 0,
@@ -130,7 +130,7 @@ ui_page01 <- function() {
             ),
             column(
               width = 4,
-              h6("All studies"),
+              h6("All studies", class = "text-center"),
               
               card(
                 height = "70px",
@@ -156,7 +156,7 @@ ui_page01 <- function() {
             ),
             column(
               width = 4,
-              h6("'significant' studies"),
+              h6("Studies with p≤α", class = "text-center"),
               
               card(
                 height = "70px",
