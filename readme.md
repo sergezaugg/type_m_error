@@ -4,6 +4,8 @@
 This Shiny web-app offers an interactive exploration of why underpowered studies are problematic.
 The bias induced by selective publishing of 'significant' underpowered studies is sometimes called the "Type-M error"
 
+<img src="contents/underpowered.png" width="500">
+
 ### Dependencies
 - R 4.5.1
 - tidyverse · shiny · bslib · metafor · thematic
