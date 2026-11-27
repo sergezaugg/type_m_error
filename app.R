@@ -23,7 +23,7 @@ ui <- tagList(
   # get CSS styles 
   includeCSS("styles/styles.css"),
   # custom footer note 
-  app_custom_footer(text = "v0.9.5-β - © 2026 Serge Zaugg"),
+  app_custom_footer(text = "v0.9.6-β - © 2026 Serge Zaugg"),
   navbarPage(
     # custom formatted title
     title = app_custom_title(text = "Underpowered Research Undermines Science"),
