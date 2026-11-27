@@ -10,8 +10,8 @@ render_example_dataset_plot <- function(df, input) {
   bg_col <- if (dark_mode) "#000000" else "white"
   fg_col <- if (dark_mode) "#E0E0E0" else "#000000"
   bordr_col <- if (dark_mode) "#cccccc" else "#999999"
-  p_col_1 <- if (dark_mode) "#0088ff" else "#0088ff"
-  p_col_2 <- if (dark_mode) "#ff5500" else "#ff5500"  
+  p_col_1 <- if (dark_mode) "#ffcc00" else "#ffaa00"
+  p_col_2 <- if (dark_mode) "#00dd00" else "#00bb00"  
   
   ggplot(df) +
     geom_jitter(
@@ -19,6 +19,7 @@ render_example_dataset_plot <- function(df, input) {
       width = 0.15,
       height = 0
     ) +
+    scale_color_manual(values = c("A"  = p_col_1, "B" = p_col_2)) + 
     theme_minimal() +
     theme(
       plot.margin = margin(t = 20, r = 10, b = 10, l = 10),
