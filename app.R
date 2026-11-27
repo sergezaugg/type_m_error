@@ -29,6 +29,7 @@ ui <- tagList(
     title = app_custom_title(text = "Underpowered Research Undermines Science"),
     # main app's theme (initial)
     theme = themes_li$Cerulean,
+    navbar_options = navbar_options(theme = "auto"),
     # pages
     ui_page01(),
     ui_page02(),
