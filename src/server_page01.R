@@ -184,9 +184,8 @@ server_page01 <- function(input, output, session) {
   #---------------------
   # map plots to output tags
 
-  # Render the plot directly so thematic_get_option("fg") reads the live CSS color
   output$sim_plot <- renderPlot({
-    render_example_dataset_plot(df = df_sim_results())
+    render_example_dataset_plot(df = df_sim_results(), input = input)
   })
 
   output$resu_plot <- renderPlot({
