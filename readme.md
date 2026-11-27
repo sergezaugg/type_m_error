@@ -8,7 +8,7 @@ The bias induced by selective publishing of 'significant' underpowered studies i
 
 ### Dependencies
 - R 4.5.1
-- tidyverse · shiny · bslib · metafor · thematic
+- tidyverse · shiny · bslib · metafor
 
 ### Data Source
 - Simulated data, no external data needed.
